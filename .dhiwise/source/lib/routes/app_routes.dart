@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wotkout_app/presentation/age_page_screen/age_page_screen.dart';
 import 'package:wotkout_app/presentation/gender_page_screen/gender_page_screen.dart';
-import 'package:wotkout_app/presentation/sign_up_screen/sign_up_screen.dart';
 import 'package:wotkout_app/presentation/weight_page_screen/weight_page_screen.dart';
 import 'package:wotkout_app/presentation/height_page_screen/height_page_screen.dart';
 import 'package:wotkout_app/presentation/loading_screen/loading_screen.dart';
@@ -11,7 +10,7 @@ import 'package:wotkout_app/presentation/physical_activity_screen/physical_activ
 import 'package:wotkout_app/presentation/profil_screen/profil_screen.dart';
 import 'package:wotkout_app/presentation/saving_page_screen/saving_page_screen.dart';
 import 'package:wotkout_app/presentation/water_screen/water_screen.dart';
-import 'package:wotkout_app/presentation/food_log_container_screen/food_log_container_screen.dart';
+import 'package:wotkout_app/presentation/food_log_container1_screen/food_log_container1_screen.dart';
 import 'package:wotkout_app/presentation/steps_screen/steps_screen.dart';
 import 'package:wotkout_app/presentation/add_steps_screen/add_steps_screen.dart';
 import 'package:wotkout_app/presentation/view_food_screen/view_food_screen.dart';
@@ -22,16 +21,17 @@ import 'package:wotkout_app/presentation/add_food_screen/add_food_screen.dart';
 import 'package:wotkout_app/presentation/add_food_2_screen/add_food_2_screen.dart';
 import 'package:wotkout_app/presentation/add_food_three_screen/add_food_three_screen.dart';
 import 'package:wotkout_app/presentation/sign_in_screen/sign_in_screen.dart';
-import 'package:wotkout_app/presentation/workout_home_screen/workout_home_screen.dart';
 import 'package:wotkout_app/presentation/begin_workout_screen/begin_workout_screen.dart';
 import 'package:wotkout_app/presentation/view_my_workout_tab_container_screen/view_my_workout_tab_container_screen.dart';
 import 'package:wotkout_app/presentation/workout_categories_tab_container_screen/workout_categories_tab_container_screen.dart';
+import 'package:wotkout_app/presentation/sign_up_screen/sign_up_screen.dart';
 import 'package:wotkout_app/presentation/do_a_workout_screen/do_a_workout_screen.dart';
 import 'package:wotkout_app/presentation/save_session_screen/save_session_screen.dart';
 import 'package:wotkout_app/presentation/start_workout_warm_up_screen/start_workout_warm_up_screen.dart';
 import 'package:wotkout_app/presentation/start_workout_chest_screen/start_workout_chest_screen.dart';
 import 'package:wotkout_app/presentation/start_workout_back_screen/start_workout_back_screen.dart';
 import 'package:wotkout_app/presentation/start_workout_shoulder_screen/start_workout_shoulder_screen.dart';
+import 'package:wotkout_app/presentation/workout_home_screen/workout_home_screen.dart';
 import 'package:wotkout_app/presentation/app_navigation_screen/app_navigation_screen.dart';
 
 class AppRoutes {
@@ -57,9 +57,9 @@ class AppRoutes {
 
   static const String waterScreen = '/water_screen';
 
-  static const String foodLogPage = '/food_log_page';
+  static const String foodLogContainerPage = '/food_log_container_page';
 
-  static const String foodLogContainerScreen = '/food_log_container_screen';
+  static const String foodLogContainer1Screen = '/food_log_container1_screen';
 
   static const String stepsScreen = '/steps_screen';
 
@@ -81,10 +81,6 @@ class AppRoutes {
 
   static const String signInScreen = '/sign_in_screen';
 
-  static const String signUpScreen = '/sign_un_screen';
-
-  static const String workoutHomeScreen = '/workout_home_screen';
-
   static const String beginWorkoutScreen = '/begin_workout_screen';
 
   static const String viewMyWorkoutPage = '/view_my_workout_page';
@@ -96,6 +92,8 @@ class AppRoutes {
 
   static const String workoutCategoriesTabContainerScreen =
       '/workout_categories_tab_container_screen';
+
+  static const String signUpScreen = '/sign_up_screen';
 
   static const String doAWorkoutScreen = '/do_a_workout_screen';
 
@@ -111,6 +109,8 @@ class AppRoutes {
   static const String startWorkoutShoulderScreen =
       '/start_workout_shoulder_screen';
 
+  static const String workoutHomeScreen = '/workout_home_screen';
+
   static const String appNavigationScreen = '/app_navigation_screen';
 
   static Map<String, WidgetBuilder> routes = {
@@ -125,7 +125,7 @@ class AppRoutes {
     profilScreen: (context) => ProfilScreen(),
     savingPageScreen: (context) => SavingPageScreen(),
     waterScreen: (context) => WaterScreen(),
-    foodLogContainerScreen: (context) => FoodLogContainerScreen(),
+    foodLogContainer1Screen: (context) => FoodLogContainer1Screen(),
     stepsScreen: (context) => StepsScreen(),
     addStepsScreen: (context) => AddStepsScreen(),
     viewFoodScreen: (context) => ViewFoodScreen(),
@@ -136,19 +136,19 @@ class AppRoutes {
     addFood2Screen: (context) => AddFood2Screen(),
     addFoodThreeScreen: (context) => AddFoodThreeScreen(),
     signInScreen: (context) => SignInScreen(),
-    signUpScreen: (context) => SignUpScreen(),
-    workoutHomeScreen: (context) => WorkoutHomeScreen(),
     beginWorkoutScreen: (context) => BeginWorkoutScreen(),
     viewMyWorkoutTabContainerScreen: (context) =>
         ViewMyWorkoutTabContainerScreen(),
     workoutCategoriesTabContainerScreen: (context) =>
         WorkoutCategoriesTabContainerScreen(),
+    signUpScreen: (context) => SignUpScreen(),
     doAWorkoutScreen: (context) => DoAWorkoutScreen(),
     saveSessionScreen: (context) => SaveSessionScreen(),
     startWorkoutWarmUpScreen: (context) => StartWorkoutWarmUpScreen(),
     startWorkoutChestScreen: (context) => StartWorkoutChestScreen(),
     startWorkoutBackScreen: (context) => StartWorkoutBackScreen(),
     startWorkoutShoulderScreen: (context) => StartWorkoutShoulderScreen(),
+    workoutHomeScreen: (context) => WorkoutHomeScreen(),
     appNavigationScreen: (context) => AppNavigationScreen()
   };
 }

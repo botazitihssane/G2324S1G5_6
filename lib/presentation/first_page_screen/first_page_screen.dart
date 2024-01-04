@@ -55,6 +55,9 @@ class FirstPageScreen extends StatelessWidget {
                   ),
                   buttonStyle: CustomButtonStyles.fillPrimaryTL10,
                   buttonTextStyle: CustomTextStyles.titleLarge22,
+                  onPressed: () {
+                    navigateToSingUp(context);
+                  },
                 ),
                 SizedBox(height: 19.v),
                 CustomElevatedButton(
@@ -65,6 +68,9 @@ class FirstPageScreen extends StatelessWidget {
                   ),
                   buttonStyle: CustomButtonStyles.fillGrayTL10,
                   buttonTextStyle: CustomTextStyles.titleLarge22,
+                  onPressed: () {
+                    navigateToSingIn(context);
+                  },
                 ),
                 SizedBox(height: 9.v),
               ],
@@ -73,5 +79,13 @@ class FirstPageScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  navigateToSingIn(BuildContext context) {
+    Navigator.pushNamed(context, AppRoutes.signInScreen);
+  }
+
+  navigateToSingUp(BuildContext context) {
+    Navigator.pushNamed(context, AppRoutes.signUpScreen);
   }
 }

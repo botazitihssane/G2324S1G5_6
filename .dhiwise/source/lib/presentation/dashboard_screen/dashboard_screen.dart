@@ -1,9 +1,7 @@
-import 'package:wotkout_app/presentation/sign_in_screen/auth.dart';
-
 import '../dashboard_screen/widgets/recipelist_item_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:wotkout_app/core/app_export.dart';
-import 'package:wotkout_app/presentation/food_log_page/food_log_page.dart';
+import 'package:wotkout_app/presentation/food_log_container_page/food_log_container_page.dart';
 import 'package:wotkout_app/widgets/custom_bottom_bar.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -14,22 +12,10 @@ class DashboardScreen extends StatelessWidget {
 
   GlobalKey<NavigatorState> navigatorKey = GlobalKey();
 
-  final Auth _auth = Auth();
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(
-          actions: [
-            IconButton(
-              icon: Icon(Icons.logout),
-              onPressed: () async {
-                await _auth.signOut();
-                Navigator.pushReplacementNamed(context, AppRoutes.signInScreen);
-              },
-            ),
-          ],
-        ),
         body: SizedBox(
           width: double.maxFinite,
           child: Column(
@@ -66,13 +52,13 @@ class DashboardScreen extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 5.v),
-              _buildSeventySevenColumn(context),
+              _buildCaloriesColumn(context),
               SizedBox(height: 19.v),
               _buildStepsRow(context),
               SizedBox(height: 19.v),
               _buildVectorStack(context),
               SizedBox(height: 14.v),
-              _buildSeventySixColumn(context),
+              _buildDiscoverColumn(context),
             ],
           ),
         ),
@@ -137,7 +123,7 @@ class DashboardScreen extends StatelessWidget {
   }
 
   /// Section Widget
-  Widget _buildSeventySevenColumn(BuildContext context) {
+  Widget _buildCaloriesColumn(BuildContext context) {
     return Container(
       margin: EdgeInsets.only(
         left: 36.h,
@@ -788,7 +774,7 @@ class DashboardScreen extends StatelessWidget {
   }
 
   /// Section Widget
-  Widget _buildSeventySixColumn(BuildContext context) {
+  Widget _buildDiscoverColumn(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: 36.h,
@@ -845,7 +831,7 @@ class DashboardScreen extends StatelessWidget {
   String getCurrentRoute(BottomBarEnum type) {
     switch (type) {
       case BottomBarEnum.Dashboard:
-        return AppRoutes.foodLogPage;
+        return AppRoutes.foodLogContainerPage;
       case BottomBarEnum.Food:
         return "/";
       case BottomBarEnum.Workout:
@@ -862,8 +848,8 @@ class DashboardScreen extends StatelessWidget {
   ///Handling page based on route
   Widget getCurrentPage(String currentRoute) {
     switch (currentRoute) {
-      case AppRoutes.foodLogPage:
-        return FoodLogPage();
+      case AppRoutes.foodLogContainerPage:
+        return FoodLogContainerPage();
       default:
         return DefaultWidget();
     }

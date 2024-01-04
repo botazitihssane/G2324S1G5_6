@@ -1,23 +1,51 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg_provider/flutter_svg_provider.dart' as fs;
 import 'package:wotkout_app/core/app_export.dart';
+import 'package:wotkout_app/presentation/sign_in_screen/auth.dart';
 import 'package:wotkout_app/widgets/app_bar/appbar_subtitle.dart';
 import 'package:wotkout_app/widgets/app_bar/appbar_trailing_circleimage.dart';
 import 'package:wotkout_app/widgets/app_bar/custom_app_bar.dart';
 import 'package:wotkout_app/widgets/custom_outlined_button.dart';
 import 'package:wotkout_app/widgets/custom_text_form_field.dart';
 
-class SignInScreen extends StatelessWidget {
-  SignInScreen({Key? key})
-      : super(
-          key: key,
-        );
+class SignInScreen extends StatefulWidget {
+  SignInScreen({Key? key}) : super(key: key);
 
+  @override
+  _SignInScreenState createState() => _SignInScreenState();
+}
+
+class _SignInScreenState extends State<SignInScreen> {
   TextEditingController emailController = TextEditingController();
-
   TextEditingController passwordController = TextEditingController();
-
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  String? errorMessage = '';
+
+  Future<void> signInWithEmailAndPassword(BuildContext context) async {
+    try {
+      await Auth().signinWithEmailAndPassword(
+        email: emailController.text,
+        password: passwordController.text,
+      );
+
+      if (Auth().currentUser != null) {
+        Navigator.pushReplacementNamed(context, AppRoutes.dashboardScreen);
+      } else {
+        print('Authentication failed.');
+      }
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        errorMessage = e.message;
+      });
+      print('Error during sign-in: ${e.code} - ${e.message}');
+    } catch (e) {
+      setState(() {
+        errorMessage = 'An unexpected error occurred.';
+      });
+      print('Unexpected error during sign-in: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +102,6 @@ class SignInScreen extends StatelessWidget {
     );
   }
 
-  /// Section Widget
   Widget _buildLogin(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,12 +114,13 @@ class SignInScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    AppbarSubtitle(
-                      text: "LOGIN",
-                    ),
+                    AppbarSubtitle(text: "LOGIN"),
                     AppbarSubtitle(
                       text: "SIGN UP",
-                      margin: EdgeInsets.only(left: 24.h),
+                      margin: EdgeInsets.only(left: 50.h),
+                      onTap: () {
+                        navigateToSingUp(context);
+                      },
                     ),
                   ],
                 ),
@@ -119,29 +147,22 @@ class SignInScreen extends StatelessWidget {
               ],
             ),
           ),
-          actions: [
-            AppbarTrailingCircleimage(
-              imagePath: ImageConstant.imgIndianMan8043472128050x58,
-              margin: EdgeInsets.symmetric(horizontal: 32.h),
-            ),
-          ],
         ),
         SizedBox(height: 114.v),
         Container(
           width: 255.h,
           margin: EdgeInsets.only(left: 27.h),
           child: Text(
-            "Welcome Back.\n MOHAMED",
+            "Welcome Back ! ",
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: CustomTextStyles.displaySmallInikaWhiteA700,
+            style: theme.textTheme.displaySmall,
           ),
         ),
       ],
     );
   }
 
-  /// Section Widget
   Widget _buildScrollView(BuildContext context) {
     return Expanded(
       child: SingleChildScrollView(
@@ -172,30 +193,37 @@ class SignInScreen extends StatelessWidget {
                   textInputType: TextInputType.emailAddress,
                   alignment: Alignment.centerLeft,
                   contentPadding: EdgeInsets.symmetric(horizontal: 3.h),
+                  textStyle: CustomTextStyles.titleLarge22,
                   borderDecoration: TextFormFieldStyleHelper.underLineBlack,
                   filled: false,
                 ),
               ),
-              SizedBox(height: 50.v),
+              SizedBox(height: 48.v),
               Padding(
-                padding: EdgeInsets.only(right: 11.h),
+                padding: EdgeInsets.only(right: 14.h),
                 child: CustomTextFormField(
                   controller: passwordController,
                   hintText: "Password",
                   hintStyle: CustomTextStyles.titleLarge22,
                   textInputAction: TextInputAction.done,
+                  alignment: Alignment.centerLeft,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 3.h),
                   textInputType: TextInputType.visiblePassword,
                   obscureText: true,
                   borderDecoration: TextFormFieldStyleHelper.underLineBlack,
                   filled: false,
+                  textStyle: CustomTextStyles.titleLarge22,
                 ),
               ),
-              SizedBox(height: 46.v),
+              SizedBox(height: 48.v),
               Padding(
-                padding: EdgeInsets.only(right: 10.h),
+                padding: EdgeInsets.only(right: 14.h),
                 child: Text(
-                  "Forgot Password?",
-                  style: CustomTextStyles.titleLarge22,
+                  errorMessage ?? "",
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 16.0,
+                  ),
                 ),
               ),
               SizedBox(height: 17.v),
@@ -206,11 +234,16 @@ class SignInScreen extends StatelessWidget {
                 margin: EdgeInsets.only(right: 14.h),
                 buttonStyle: CustomButtonStyles.outlineOrange,
                 buttonTextStyle: CustomTextStyles.titleLargeBlack90001,
+                onPressed: () => signInWithEmailAndPassword(context),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void navigateToSingUp(BuildContext context) {
+    Navigator.pushNamed(context, AppRoutes.signUpScreen);
   }
 }
