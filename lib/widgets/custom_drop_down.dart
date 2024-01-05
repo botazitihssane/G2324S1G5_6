@@ -112,7 +112,7 @@ class CustomDropDown extends StatelessWidget {
               horizontal: 6.h,
               vertical: 14.v,
             ),
-        fillColor: fillColor,
+        fillColor: appTheme.whiteA700,
         filled: filled,
         border: borderDecoration ?? InputBorder.none,
         enabledBorder: borderDecoration ?? InputBorder.none,

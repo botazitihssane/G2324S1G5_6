@@ -32,20 +32,34 @@ class _SignInScreenState extends State<SignInScreen> {
       );
 
       if (Auth().currentUser != null) {
-        // Check if attributes are empty
         CustomUser user = CustomUser();
-        bool areAttributesEmpty = user.areAttributesEmpty();
+        await user.retrieveUserInfo(emailController.text);
+        print("Attributes after retrieval:");
+        print("Genre: $user.genre");
+        print("Age: ${user.age}");
+        print("Taille: ${user.taille}");
+        print("Poids: ${user.poids}");
+        print("Activite Physique: ${user.activite_physique}");
+        print("Objectif: ${user.objectif}");
+        print("Email: ${user.email}");
+        print("Telephone: ${user.telephone}");
+        print("Username: ${user.username}");
 
-        if (areAttributesEmpty) {
-          user.email = emailController.text;
+        if (user.areAttributesEmpty()) {
           Navigator.pushNamed(
             context,
             AppRoutes.genderPageScreen,
             arguments: user,
           );
         } else {
-          // Redirect to dashboard page
-          Navigator.pushReplacementNamed(context, AppRoutes.dashboardScreen);
+          // Check if all attributes are present before navigating
+          if (!user.areAttributesEmpty()) {
+            Navigator.pushReplacementNamed(
+                context, AppRoutes.modifyProfilScreen);
+          } else {
+            // Handle the case where some attributes are missing
+            print("Some attributes are missing");
+          }
         }
       } else {
         print('Authentication failed.');
