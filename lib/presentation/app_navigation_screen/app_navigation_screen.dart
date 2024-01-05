@@ -75,12 +75,6 @@ class AppNavigationScreen extends StatelessWidget {
                         ),
                         _buildScreenTitle(
                           context,
-                          screenTitle: "Profil",
-                          onTapScreenTitle: () =>
-                              onTapScreenTitle(context, AppRoutes.profilScreen),
-                        ),
-                        _buildScreenTitle(
-                          context,
                           screenTitle: "Saving page",
                           onTapScreenTitle: () => onTapScreenTitle(
                               context, AppRoutes.savingPageScreen),

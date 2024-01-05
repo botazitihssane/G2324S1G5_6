@@ -2,11 +2,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg_provider/flutter_svg_provider.dart' as fs;
 import 'package:wotkout_app/core/app_export.dart';
+import 'package:wotkout_app/model/user.dart';
 import 'package:wotkout_app/widgets/app_bar/appbar_subtitle.dart';
 import 'package:wotkout_app/widgets/app_bar/appbar_trailing_circleimage.dart';
 import 'package:wotkout_app/widgets/app_bar/custom_app_bar.dart';
 import 'package:wotkout_app/widgets/custom_outlined_button.dart';
 import 'package:wotkout_app/widgets/custom_text_form_field.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignUpScreen extends StatelessWidget {
   SignUpScreen({Key? key}) : super(key: key);
@@ -34,6 +36,14 @@ class SignUpScreen extends StatelessWidget {
         email: emailEditTextController.text,
         password: passwordEditTextController.text,
       );
+
+      CustomUser user = CustomUser();
+      user.email = emailEditTextController.text;
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc()
+          .set(user.toMap());
+
       Navigator.pushReplacementNamed(context, AppRoutes.signInScreen);
     } catch (e) {
       print('Error during registration: $e');

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wotkout_app/model/user.dart';
 import 'package:wotkout_app/presentation/age_page_screen/age_page_screen.dart';
 import 'package:wotkout_app/presentation/gender_page_screen/gender_page_screen.dart';
 import 'package:wotkout_app/presentation/sign_up_screen/sign_up_screen.dart';
@@ -8,7 +9,6 @@ import 'package:wotkout_app/presentation/loading_screen/loading_screen.dart';
 import 'package:wotkout_app/presentation/first_page_screen/first_page_screen.dart';
 import 'package:wotkout_app/presentation/goal_page_screen/goal_page_screen.dart';
 import 'package:wotkout_app/presentation/physical_activity_screen/physical_activity_screen.dart';
-import 'package:wotkout_app/presentation/profil_screen/profil_screen.dart';
 import 'package:wotkout_app/presentation/saving_page_screen/saving_page_screen.dart';
 import 'package:wotkout_app/presentation/water_screen/water_screen.dart';
 import 'package:wotkout_app/presentation/food_log_container_screen/food_log_container_screen.dart';
@@ -50,8 +50,6 @@ class AppRoutes {
   static const String goalPageScreen = '/goal_page_screen';
 
   static const String physicalActivityScreen = '/physical_activity_screen';
-
-  static const String profilScreen = '/profil_screen';
 
   static const String savingPageScreen = '/saving_page_screen';
 
@@ -113,17 +111,58 @@ class AppRoutes {
 
   static const String appNavigationScreen = '/app_navigation_screen';
 
+  static Widget ageScreen(BuildContext context) {
+    return AgePageScreen(
+      user: ModalRoute.of(context)!.settings.arguments as CustomUser,
+    );
+  }
+
+  static Widget genderScreen(BuildContext context) {
+    return GenderPageScreen(
+      user: ModalRoute.of(context)!.settings.arguments as CustomUser,
+    );
+  }
+
+  static Widget heightScreen(BuildContext context) {
+    return HeightPageScreen(
+      user: ModalRoute.of(context)!.settings.arguments as CustomUser,
+    );
+  }
+
+  static Widget weightScreen(BuildContext context) {
+    return WeightPageScreen(
+      user: ModalRoute.of(context)!.settings.arguments as CustomUser,
+    );
+  }
+
+  static Widget goalScreen(BuildContext context) {
+    return GoalPageScreen(
+      user: ModalRoute.of(context)!.settings.arguments as CustomUser,
+    );
+  }
+
+  static Widget PhysicalActivityPage(BuildContext context) {
+    return PhysicalActivityScreen(
+      user: ModalRoute.of(context)!.settings.arguments as CustomUser,
+    );
+  }
+
+  static Widget SavingPage(BuildContext context) {
+    return SavingPageScreen(
+      user: ModalRoute.of(context)!.settings.arguments as CustomUser,
+    );
+  }
+
   static Map<String, WidgetBuilder> routes = {
-    agePageScreen: (context) => AgePageScreen(),
-    genderPageScreen: (context) => GenderPageScreen(),
-    weightPageScreen: (context) => WeightPageScreen(),
-    heightPageScreen: (context) => HeightPageScreen(),
+    agePageScreen: (context) => ageScreen(context),
+    genderPageScreen: (context) => genderScreen(context),
+    heightPageScreen: (context) => heightScreen(context),
+    weightPageScreen: (context) => weightScreen(context),
     loadingScreen: (context) => LoadingScreen(),
     firstPageScreen: (context) => FirstPageScreen(),
-    goalPageScreen: (context) => GoalPageScreen(),
-    physicalActivityScreen: (context) => PhysicalActivityScreen(),
-    profilScreen: (context) => ProfilScreen(),
-    savingPageScreen: (context) => SavingPageScreen(),
+    goalPageScreen: (context) => goalScreen(context),
+    physicalActivityScreen: (context) => PhysicalActivityPage(context),
+    savingPageScreen: (context) => SavingPage(context),
     waterScreen: (context) => WaterScreen(),
     foodLogContainerScreen: (context) => FoodLogContainerScreen(),
     stepsScreen: (context) => StepsScreen(),

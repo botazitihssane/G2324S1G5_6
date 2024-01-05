@@ -1,10 +1,10 @@
 name: wotkout_app
 description: A new Flutter project.
 version: 1.0.0+1
-environment: 
-  sdk: '>=2.12.0 <3.0.0'
-dependencies: 
-  flutter: 
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+dependencies:
+  flutter:
     sdk: flutter
   cached_network_image: ^3.3.0
   flutter_svg: ^2.0.9
@@ -13,39 +13,43 @@ dependencies:
   firebase_storage: ^11.6.0
   firebase_core: ^2.24.2
   firebase_auth: ^4.16.0
-dev_dependencies: 
-  flutter_test: 
+  cloud_firestore: ^4.14.0
+  scrollable_positioned_list: ^0.3.8
+  shared_preferences: ^2.0.8
+
+dev_dependencies:
+  flutter_test:
     sdk: flutter
-flutter: 
+flutter:
   uses-material-design: true
-  assets: 
+  assets:
     - assets/
     - assets/images/
-  fonts: 
+  fonts:
     - family: Inika
-      fonts: 
+      fonts:
         - asset: assets/fonts/InikaBold.ttf
           weight: 700
         - asset: assets/fonts/Inika.ttf
           weight: 400
     - family: Khmer
-      fonts: 
+      fonts:
         - asset: assets/fonts/Khmer.ttf
           weight: 400
     - family: DM Sans
-      fonts: 
+      fonts:
         - asset: assets/fonts/DMSansBold.ttf
           weight: 700
         - asset: assets/fonts/DMSansMedium.ttf
           weight: 500
     - family: Inter
-      fonts: 
+      fonts:
         - asset: assets/fonts/InterSemiBold.ttf
           weight: 600
         - asset: assets/fonts/InterRegular.ttf
           weight: 400
     - family: Open Sans
-      fonts: 
+      fonts:
         - asset: assets/fonts/OpenSansSemiBold.ttf
           weight: 600
         - asset: assets/fonts/OpenSansRegular.ttf

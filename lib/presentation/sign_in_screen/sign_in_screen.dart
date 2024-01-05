@@ -2,12 +2,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg_provider/flutter_svg_provider.dart' as fs;
 import 'package:wotkout_app/core/app_export.dart';
+import 'package:wotkout_app/model/user.dart';
 import 'package:wotkout_app/presentation/sign_in_screen/auth.dart';
 import 'package:wotkout_app/widgets/app_bar/appbar_subtitle.dart';
 import 'package:wotkout_app/widgets/app_bar/appbar_trailing_circleimage.dart';
 import 'package:wotkout_app/widgets/app_bar/custom_app_bar.dart';
 import 'package:wotkout_app/widgets/custom_outlined_button.dart';
 import 'package:wotkout_app/widgets/custom_text_form_field.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignInScreen extends StatefulWidget {
   SignInScreen({Key? key}) : super(key: key);
@@ -30,7 +32,21 @@ class _SignInScreenState extends State<SignInScreen> {
       );
 
       if (Auth().currentUser != null) {
-        Navigator.pushReplacementNamed(context, AppRoutes.dashboardScreen);
+        // Check if attributes are empty
+        CustomUser user = CustomUser();
+        bool areAttributesEmpty = user.areAttributesEmpty();
+
+        if (areAttributesEmpty) {
+          user.email = emailController.text;
+          Navigator.pushNamed(
+            context,
+            AppRoutes.genderPageScreen,
+            arguments: user,
+          );
+        } else {
+          // Redirect to dashboard page
+          Navigator.pushReplacementNamed(context, AppRoutes.dashboardScreen);
+        }
       } else {
         print('Authentication failed.');
       }
@@ -45,6 +61,12 @@ class _SignInScreenState extends State<SignInScreen> {
       });
       print('Unexpected error during sign-in: $e');
     }
+  }
+
+  // Store user email in SharedPreferences
+  Future<void> storeUserEmail(String email) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('user_email', email);
   }
 
   @override
