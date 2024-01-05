@@ -1,6 +1,7 @@
-
 # wotkout_app
+
 ### Table of contents
+
 - [System requirements](#system-requirements)
 - [Figma design guidelines for better UI accuracy](#figma-design-guideline-for-better-accuracy)
 - [Check the UI of the entire app](#app-navigations)
@@ -25,8 +26,9 @@ https://docs.dhiwise.com/docs/Designguidelines/intro
 Check the UI of all the app screens from a single place by setting up the 'initialRoute'  to AppNavigation in the AppRoutes.dart file.
 
 ### Application structure
+
 After successful build, your application structure should look like this:
-                    
+
 ```
 .
 ├── android                         - It contains files required to run the application on an Android platform.
@@ -43,6 +45,7 @@ After successful build, your application structure should look like this:
     └── theme                       - It contains app theme and decoration classes
     └── widgets                     - It contains all custom widget classes
 ```
+
 ### How to format your code?
 
 - if your code is not formatted then run following command in your terminal to format code
@@ -57,11 +60,3 @@ Resolve the errors and warnings that are shown in the application.
 ### Support
 
 If you have any problems or questions, go to our Discord channel, where we will help you as quickly as possible: https://discord.com/invite/rFMnCG5MZ7
-
-### Image Assets
-We were unable to find Images, Please add manually to ```project/assets``` and replace image_not_found Image constant with original file 
-
-| File Name | Not Found Assets Count |
-| --- | :---: |
-| profil_screen | 2 |
-
