@@ -1,29 +1,92 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '../steps_screen/widgets/viewhierarchycomponent_item_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:wotkout_app/core/app_export.dart';
 import 'package:wotkout_app/presentation/food_log_page/food_log_page.dart';
 import 'package:wotkout_app/widgets/custom_bottom_bar.dart';
+import 'package:intl/intl.dart';
+import 'package:fl_chart/fl_chart.dart';
 
-class StepsScreen extends StatelessWidget {
-  StepsScreen({Key? key})
-      : super(
-          key: key,
-        );
+class StepsScreen extends StatefulWidget {
+  StepsScreen({Key? key}) : super(key: key);
 
+  @override
+  _StepsScreenState createState() => _StepsScreenState();
+}
+
+class _StepsScreenState extends State<StepsScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  late Future<List<DocumentSnapshot<Object?>>> _userSteps;
   GlobalKey<NavigatorState> navigatorKey = GlobalKey();
+
+  User? _user;
+  @override
+  void initState() {
+    super.initState();
+    _user = _auth.currentUser;
+    _userSteps = _fetchUserSteps();
+  }
+
+  Future<List<DocumentSnapshot>> _fetchUserSteps() async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: _user!.email)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        String userId = querySnapshot.docs.first.id;
+        QuerySnapshot stepsSnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .collection('steps')
+            .get();
+
+        return stepsSnapshot.docs;
+      }
+
+      return [];
+    } catch (error) {
+      print("Error fetching user steps: $error");
+      return [];
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: SizedBox(
-          width: double.maxFinite,
+        body: SingleChildScrollView(
           child: Column(
             children: [
-              SizedBox(height: 38.v),
-              _buildStepsColumn(context),
-              SizedBox(height: 23.v),
-              _buildEntriesStack(context),
+              SizedBox(height: 20.v),
+              FutureBuilder<List<DocumentSnapshot<Object?>>>(
+                future: _userSteps,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return CircularProgressIndicator();
+                  }
+
+                  if (snapshot.hasError) {
+                    return Text("Error: ${snapshot.error}");
+                  }
+
+                  List<DocumentSnapshot<Object?>> steps = snapshot.data ?? [];
+
+                  return Column(
+                    children: [
+                      _buildStepsColumn(context, steps),
+                      SizedBox(height: 10.v),
+                      _buildEntriesStack(steps),
+                    ],
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -32,17 +95,15 @@ class StepsScreen extends StatelessWidget {
     );
   }
 
-  /// Section Widget
-  Widget _buildStepsColumn(BuildContext context) {
+  Widget _buildStepsColumn(BuildContext context, List<DocumentSnapshot> steps) {
     return Column(
       children: [
         Text(
           "Steps",
           style: theme.textTheme.headlineLarge,
         ),
-        SizedBox(height: 35.v),
         SizedBox(
-          height: 273.v,
+          height: 150.v,
           width: double.maxFinite,
           child: Stack(
             alignment: Alignment.topCenter,
@@ -56,316 +117,10 @@ class StepsScreen extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Padding(
-                        padding: EdgeInsets.only(
-                          left: 12.h,
-                          right: 18.h,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            CustomImageView(
-                              imagePath: ImageConstant.imgCalendar,
-                              height: 18.adaptSize,
-                              width: 18.adaptSize,
-                              margin: EdgeInsets.only(
-                                top: 7.v,
-                                bottom: 5.v,
-                              ),
-                            ),
-                            Spacer(),
-                            Padding(
-                              padding: EdgeInsets.only(
-                                top: 10.v,
-                                bottom: 7.v,
-                              ),
-                              child: Text(
-                                "1 week ",
-                                style: CustomTextStyles.labelMediumWhiteA700,
-                              ),
-                            ),
-                            CustomImageView(
-                              imagePath: ImageConstant.imgArrowUpIndigoA40001,
-                              height: 3.v,
-                              width: 5.h,
-                              margin: EdgeInsets.only(
-                                left: 6.h,
-                                top: 16.v,
-                                bottom: 12.v,
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.only(left: 8.h),
-                              child: SizedBox(
-                                height: 32.v,
-                                child: VerticalDivider(
-                                  width: 1.h,
-                                  thickness: 1.v,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              width: 153.h,
-                              margin: EdgeInsets.only(
-                                left: 10.h,
-                                top: 7.v,
-                                bottom: 5.v,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  CustomImageView(
-                                    imagePath: ImageConstant.imgSettings,
-                                    height: 18.adaptSize,
-                                    width: 18.adaptSize,
-                                    margin: EdgeInsets.only(bottom: 1.v),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(top: 5.v),
-                                    child: Text(
-                                      "Add data",
-                                      style: CustomTextStyles
-                                          .labelMediumWhiteA700
-                                          .copyWith(
-                                        decoration: TextDecoration.underline,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 6.v),
-                      Padding(
-                        padding: EdgeInsets.only(
-                          left: 11.h,
-                          right: 18.h,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "2864",
-                                  style: theme.textTheme.labelLarge,
-                                ),
-                                Text(
-                                  "AVERAGE",
-                                  style: CustomTextStyles.bodySmall8,
-                                ),
-                              ],
-                            ),
-                            Column(
-                              children: [
-                                SizedBox(
-                                  width: 190.h,
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        "8456",
-                                        style: theme.textTheme.labelLarge,
-                                      ),
-                                      Text(
-                                        "14598",
-                                        style: theme.textTheme.labelLarge,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  width: 187.h,
-                                  margin: EdgeInsets.only(right: 3.h),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        "BEST",
-                                        style: CustomTextStyles.bodySmall8,
-                                      ),
-                                      Text(
-                                        "TOTAL",
-                                        style: CustomTextStyles.bodySmall8,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 13.v),
-                      SizedBox(
-                        height: 180.v,
-                        width: 366.h,
-                        child: Stack(
-                          alignment: Alignment.topRight,
-                          children: [
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: Row(
-                                children: [
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        "10000",
-                                        style:
-                                            CustomTextStyles.bodySmallGray600,
-                                      ),
-                                      SizedBox(height: 25.v),
-                                      Text(
-                                        "7500",
-                                        style:
-                                            CustomTextStyles.bodySmallGray600,
-                                      ),
-                                      SizedBox(height: 28.v),
-                                      Text(
-                                        "5000",
-                                        style:
-                                            CustomTextStyles.bodySmallGray600,
-                                      ),
-                                      SizedBox(height: 29.v),
-                                      Text(
-                                        "2500",
-                                        style:
-                                            CustomTextStyles.bodySmallGray600,
-                                      ),
-                                      SizedBox(height: 28.v),
-                                      Text(
-                                        "0",
-                                        style:
-                                            CustomTextStyles.bodySmallGray600,
-                                      ),
-                                    ],
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 6.h),
-                                    child: SizedBox(
-                                      height: 166.v,
-                                      child: VerticalDivider(
-                                        width: 1.h,
-                                        thickness: 1.v,
-                                        indent: 3.h,
-                                        endIndent: 3.h,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            CustomImageView(
-                              imagePath: ImageConstant.imgGroup,
-                              height: 157.v,
-                              width: 337.h,
-                              alignment: Alignment.topRight,
-                              margin: EdgeInsets.only(
-                                top: 5.v,
-                                right: 1.h,
-                              ),
-                            ),
-                            Align(
-                              alignment: Alignment.bottomRight,
-                              child: Padding(
-                                padding: EdgeInsets.only(bottom: 16.v),
-                                child: SizedBox(
-                                  width: 340.h,
-                                  child: Divider(),
-                                ),
-                              ),
-                            ),
-                            Align(
-                              alignment: Alignment.bottomLeft,
-                              child: Padding(
-                                padding: EdgeInsets.only(
-                                  left: 26.h,
-                                  top: 163.v,
-                                  right: 88.h,
-                                ),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    CustomImageView(
-                                      imagePath: ImageConstant.imgGroupGray600,
-                                      height: 6.v,
-                                      width: 1.h,
-                                      margin: EdgeInsets.only(bottom: 11.v),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(
-                                        left: 7.h,
-                                        top: 6.v,
-                                      ),
-                                      child: Text(
-                                        "03/11",
-                                        style:
-                                            CustomTextStyles.bodySmallGray600,
-                                      ),
-                                    ),
-                                    Spacer(
-                                      flex: 29,
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(top: 5.v),
-                                      child: Text(
-                                        "10/11",
-                                        style:
-                                            CustomTextStyles.bodySmallGray600,
-                                      ),
-                                    ),
-                                    Spacer(
-                                      flex: 40,
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(top: 6.v),
-                                      child: Text(
-                                        "17/11",
-                                        style:
-                                            CustomTextStyles.bodySmallGray600,
-                                      ),
-                                    ),
-                                    Spacer(
-                                      flex: 29,
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(top: 6.v),
-                                      child: Text(
-                                        "24/11",
-                                        style:
-                                            CustomTextStyles.bodySmallGray600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Align(
-                              alignment: Alignment.bottomRight,
-                              child: Padding(
-                                padding: EdgeInsets.only(
-                                  right: 7.h,
-                                  bottom: 2.v,
-                                ),
-                                child: Text(
-                                  "01/12",
-                                  style: CustomTextStyles.bodySmallGray600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 13.v),
+                      _buildHeaderRow(),
+                      SizedBox(height: 25.v),
+                      _buildDataSummaryRow(steps),
+                      SizedBox(height: 15.v),
                     ],
                   ),
                 ),
@@ -397,90 +152,171 @@ class StepsScreen extends StatelessWidget {
     );
   }
 
-  /// Section Widget
-  Widget _buildEntriesStack(BuildContext context) {
-    return SizedBox(
-      height: 388.v,
-      width: double.maxFinite,
-      child: Stack(
-        alignment: Alignment.bottomCenter,
+  Widget _buildHeaderRow() {
+    return Padding(
+      padding: EdgeInsets.only(left: 12.h, right: 18.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Align(
-            alignment: Alignment.center,
-            child: Container(
-              padding: EdgeInsets.symmetric(vertical: 7.v),
-              decoration: AppDecoration.fillGray800931,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+          Spacer(),
+          Container(
+            width: 153.h,
+            margin: EdgeInsets.only(left: 10.h, top: 7.v, bottom: 5.v),
+            child: GestureDetector(
+              onTap: () {
+                navigateToAddSteps(context);
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: EdgeInsets.only(left: 26.h),
+                    padding: EdgeInsets.only(top: 5.v, right: 15.v),
                     child: Text(
-                      "Entries",
-                      style: theme.textTheme.labelLarge,
+                      "Add data",
+                      style: CustomTextStyles.labelMediumWhiteA700.copyWith(
+                        decoration: TextDecoration.underline,
+                      ),
                     ),
                   ),
-                  SizedBox(height: 8.v),
-                  Column(
-                    children: [
-                      Container(
-                        decoration: AppDecoration.fillGray800931,
-                        child: Column(
-                          children: [
-                            Divider(),
-                            SizedBox(height: 9.v),
-                            Padding(
-                              padding: EdgeInsets.only(
-                                left: 25.h,
-                                right: 35.h,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "Sunday, 3 December 2023",
-                                    style: theme.textTheme.bodySmall,
-                                  ),
-                                  Text(
-                                    "1903",
-                                    style: theme.textTheme.bodySmall,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(height: 9.v),
-                          ],
-                        ),
-                      ),
-                      Divider(),
-                    ],
+                  CustomImageView(
+                    imagePath: ImageConstant.imgSettings,
+                    height: 18.adaptSize,
+                    width: 18.adaptSize,
+                    margin: EdgeInsets.only(bottom: 1.v),
                   ),
-                  SizedBox(height: 8.v),
                 ],
               ),
             ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDataSummaryRow(List<DocumentSnapshot> steps) {
+    return Padding(
+      padding: EdgeInsets.only(left: 11.h, right: 18.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center, // Center vertically
+        children: [
+          Text(
+            "Total: ${calculateTotalSteps(steps)}",
+            style: theme.textTheme.bodySmall,
           ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: EdgeInsets.only(
-                top: 67.v,
-                bottom: 40.v,
-              ),
-              child: ListView.builder(
-                physics: NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: 8,
-                itemBuilder: (context, index) {
-                  return ViewhierarchycomponentItemWidget();
-                },
-              ),
-            ),
+          Text(
+            "Best: ${calculateBestSteps(steps)}",
+            style: theme.textTheme.bodySmall,
+          ),
+          Text(
+            "Average: ${calculateAverageSteps(steps).toStringAsFixed(2)}",
+            style: theme.textTheme.bodySmall,
           ),
         ],
       ),
+    );
+  }
+
+// Helper methods for calculations
+  int calculateTotalSteps(List<DocumentSnapshot> steps) {
+    int totalSteps = 0;
+    for (var step in steps) {
+      totalSteps += (step['nombre'] ?? 0) as int;
+    }
+    return totalSteps;
+  }
+
+  int calculateBestSteps(List<DocumentSnapshot> steps) {
+    int bestSteps = 0;
+    for (var step in steps) {
+      int currentSteps = step['nombre'] ?? 0;
+      if (currentSteps > bestSteps) {
+        bestSteps = currentSteps;
+      }
+    }
+    return bestSteps;
+  }
+
+  double calculateAverageSteps(List<DocumentSnapshot> steps) {
+    int totalSteps = calculateTotalSteps(steps);
+    int numberOfEntries = steps.length;
+
+    if (numberOfEntries > 0) {
+      return totalSteps / numberOfEntries;
+    } else {
+      return 0.0;
+    }
+  }
+
+  Widget _buildEntriesStack(List<DocumentSnapshot> steps) {
+    steps.sort((a, b) {
+      DateTime dateA = DateTime.parse(a['date']);
+      DateTime dateB = DateTime.parse(b['date']);
+      return dateB.compareTo(dateA);
+    });
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 8.v),
+      decoration: AppDecoration.fillGray800931,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            height: 10.v,
+          ),
+          Padding(
+            padding: EdgeInsets.only(left: 26.h),
+            child: Text(
+              "Entries",
+              style: theme.textTheme.labelLarge,
+            ),
+          ),
+          SizedBox(height: 8.v),
+          for (var step in steps) _buildStepEntry(step['date'], step['nombre']),
+          SizedBox(height: 8.v),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepEntry(String date, int count) {
+    DateTime dateTime = DateTime.parse(date);
+    String formattedDate = DateFormat.yMMMMd().format(dateTime);
+
+    return Column(
+      children: [
+        Container(
+          decoration: AppDecoration.fillGray800931,
+          child: Column(
+            children: [
+              Divider(),
+              SizedBox(height: 9.v),
+              Padding(
+                padding: EdgeInsets.only(
+                  left: 25.h,
+                  right: 35.h,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      formattedDate,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    Text(
+                      count.toString(),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 9.v),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -521,4 +357,8 @@ class StepsScreen extends StatelessWidget {
         return DefaultWidget();
     }
   }
+}
+
+void navigateToAddSteps(BuildContext context) {
+  Navigator.pushNamed(context, AppRoutes.addStepsScreen);
 }

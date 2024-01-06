@@ -1,11 +1,55 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:wotkout_app/core/app_export.dart';
+import 'package:wotkout_app/presentation/steps_screen/steps_screen.dart';
 
-class AddStepsScreen extends StatelessWidget {
-  const AddStepsScreen({Key? key})
-      : super(
-          key: key,
-        );
+class AddStepsScreen extends StatefulWidget {
+  @override
+  _AddStepsScreenState createState() => _AddStepsScreenState();
+}
+
+class _AddStepsScreenState extends State<AddStepsScreen> {
+  final TextEditingController stepsController = TextEditingController();
+  final TextEditingController dateController = TextEditingController();
+
+  late String formattedDate;
+
+  void _submitData(BuildContext context) async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? user = auth.currentUser;
+
+    if (user != null) {
+      String userEmail = user.email ?? '';
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: userEmail)
+          .get()
+          .then((QuerySnapshot querySnapshot) async {
+        if (querySnapshot.docs.isNotEmpty) {
+          String userId = querySnapshot.docs.first.id;
+
+          print(formattedDate);
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userId)
+              .collection('steps')
+              .add({
+            'date': formattedDate,
+            'nombre': int.tryParse(stepsController.text) ?? 0,
+          });
+          /*Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => StepsScreen()),
+          );*/
+        } else {
+          print('User document not found');
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,9 +95,14 @@ class AddStepsScreen extends StatelessWidget {
         children: [
           Padding(
             padding: EdgeInsets.only(bottom: 2.v),
-            child: Text(
-              "Cancel",
-              style: theme.textTheme.titleLarge,
+            child: TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(
+                "Cancel",
+                style: CustomTextStyles.titleLargeIndigoA40001,
+              ),
             ),
           ),
           Spacer(
@@ -71,9 +120,14 @@ class AddStepsScreen extends StatelessWidget {
           ),
           Padding(
             padding: EdgeInsets.only(bottom: 2.v),
-            child: Text(
-              "Add",
-              style: CustomTextStyles.titleLargeIndigoA40001,
+            child: TextButton(
+              onPressed: () {
+                _submitData(context);
+              },
+              child: Text(
+                "Add",
+                style: CustomTextStyles.titleLargeIndigoA40001,
+              ),
             ),
           ),
         ],
@@ -113,15 +167,37 @@ class AddStepsScreen extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  width: 90.h,
+                  width: 80.h,
+                  height: 23.v,
                   margin: EdgeInsets.only(bottom: 2.v),
                   padding: EdgeInsets.symmetric(horizontal: 17.h),
                   decoration: AppDecoration.fillBluegray100.copyWith(
                     borderRadius: BorderRadiusStyle.roundedBorder5,
                   ),
-                  child: Text(
-                    "03/12/2023",
+                  child: TextFormField(
+                    onTap: () async {
+                      DateTime? selectedDate = await showDatePicker(
+                        context: context,
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2101),
+                      );
+
+                      if (selectedDate != null) {
+                        print(selectedDate);
+                        formattedDate =
+                            DateFormat('yyyy-MM-dd').format(selectedDate);
+
+                        setState(() {
+                          dateController.text = formattedDate;
+                          print(dateController.text);
+                        });
+                      }
+                    },
+                    controller: dateController,
                     style: theme.textTheme.labelLarge,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                    ),
                   ),
                 ),
               ],
@@ -130,51 +206,6 @@ class AddStepsScreen extends StatelessWidget {
           SizedBox(height: 5.v),
           Divider(
             color: appTheme.gray600.withOpacity(0.28),
-          ),
-          SizedBox(height: 6.v),
-          SizedBox(
-            height: 23.v,
-            width: 325.h,
-            child: Stack(
-              alignment: Alignment.topRight,
-              children: [
-                Align(
-                  alignment: Alignment.center,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.only(left: 14.h),
-                        child: Text(
-                          "Time",
-                          style: theme.textTheme.labelLarge,
-                        ),
-                      ),
-                      SizedBox(height: 5.v),
-                      Divider(
-                        color: appTheme.gray600.withOpacity(0.28),
-                      ),
-                    ],
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Container(
-                    width: 58.h,
-                    margin: EdgeInsets.only(right: 10.h),
-                    padding: EdgeInsets.symmetric(horizontal: 15.h),
-                    decoration: AppDecoration.fillBluegray100.copyWith(
-                      borderRadius: BorderRadiusStyle.roundedBorder5,
-                    ),
-                    child: Text(
-                      "20:29",
-                      style: theme.textTheme.labelLarge,
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ),
           SizedBox(height: 6.v),
           Padding(
@@ -189,11 +220,20 @@ class AddStepsScreen extends StatelessWidget {
                   "Steps",
                   style: theme.textTheme.labelLarge,
                 ),
-                Padding(
-                  padding: EdgeInsets.only(top: 2.v),
-                  child: SizedBox(
-                    child: Divider(
-                      color: appTheme.indigoA40001,
+                Container(
+                  width: 80.h,
+                  height: 23.v,
+                  margin: EdgeInsets.only(bottom: 2.v),
+                  padding: EdgeInsets.symmetric(horizontal: 17.h),
+                  decoration: AppDecoration.fillBluegray100.copyWith(
+                    borderRadius: BorderRadiusStyle.roundedBorder5,
+                  ),
+                  child: TextField(
+                    controller: stepsController,
+                    keyboardType: TextInputType.number,
+                    style: theme.textTheme.labelLarge,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
                     ),
                   ),
                 ),
