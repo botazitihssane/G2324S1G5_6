@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wotkout_app/model/food.dart';
 import 'package:wotkout_app/model/user.dart';
 import 'package:wotkout_app/presentation/age_page_screen/age_page_screen.dart';
 import 'package:wotkout_app/presentation/gender_page_screen/gender_page_screen.dart';
@@ -153,6 +154,16 @@ class AppRoutes {
     );
   }
 
+  static Widget addFood2Page(BuildContext context) {
+    final arguments = ModalRoute.of(context)!.settings.arguments as Food;
+
+    return AddFood2Screen(foodData: arguments);
+  }
+
+  static Widget searchFoodPage(BuildContext context) {
+    return SearchFoodScreen();
+  }
+
   static Map<String, WidgetBuilder> routes = {
     agePageScreen: (context) => ageScreen(context),
     genderPageScreen: (context) => genderScreen(context),
@@ -168,11 +179,11 @@ class AppRoutes {
     stepsScreen: (context) => StepsScreen(),
     addStepsScreen: (context) => AddStepsScreen(),
     viewFoodScreen: (context) => ViewFoodScreen(),
-    searchFoodScreen: (context) => SearchFoodScreen(),
+    searchFoodScreen: (context) => searchFoodPage(context),
     modifyProfilScreen: (context) => ModifyProfilScreen(),
     dashboardScreen: (context) => DashboardScreen(),
     addFoodScreen: (context) => AddFoodScreen(),
-    addFood2Screen: (context) => AddFood2Screen(),
+    addFood2Screen: (context) => addFood2Page(context),
     addFoodThreeScreen: (context) => AddFoodThreeScreen(),
     signInScreen: (context) => SignInScreen(),
     signUpScreen: (context) => SignUpScreen(),

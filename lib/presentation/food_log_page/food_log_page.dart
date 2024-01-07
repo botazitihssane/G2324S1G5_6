@@ -1,13 +1,45 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
+
 import '../food_log_page/widgets/columnsection_item_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:wotkout_app/core/app_export.dart';
 
-// ignore_for_file: must_be_immutable
-class FoodLogPage extends StatelessWidget {
-  const FoodLogPage({Key? key})
+class FoodLogPage extends StatefulWidget {
+  FoodLogPage({Key? key})
       : super(
           key: key,
         );
+
+  @override
+  __FoodLogState createState() => __FoodLogState();
+}
+
+class __FoodLogState extends State<FoodLogPage> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  late Future<List<DocumentSnapshot<Object?>>> _userFood;
+
+  GlobalKey<NavigatorState> navigatorKey = GlobalKey();
+  User? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _user = _auth.currentUser;
+  }
+
+  Future<List<DocumentSnapshot>> _fetchUserWater() async {
+    String formattedDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('dailyFoodLog')
+        .where('user', isEqualTo: _user!.email)
+        .where('date', isEqualTo: formattedDate)
+        .limit(1)
+        .get();
+    return querySnapshot.docs;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +60,9 @@ class FoodLogPage extends StatelessWidget {
                 _buildFoodLogSection(context),
                 Divider(),
                 SizedBox(height: 29.v),
-                _buildFifteenSection(context),
-                _buildColumnSection(context),
+                _buildColumnSections(context),
+                SizedBox(height: 29.v),
+                _buildWaterLogSection(context),
               ],
             ),
           ),
@@ -167,123 +200,102 @@ class FoodLogPage extends StatelessWidget {
     );
   }
 
-  /// Section Widget
-  Widget _buildFifteenSection(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 5.v),
-      decoration: AppDecoration.fillGray800931,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(height: 3.v),
-          Padding(
-            padding: EdgeInsets.only(
-              left: 14.h,
-              right: 20.h,
-            ),
-            child: _buildRizJauneSection(
-              context,
-              dynamicText1: "Breakfast",
-              dynamicText2: "279",
-            ),
-          ),
-          SizedBox(height: 5.v),
-          Divider(),
-          SizedBox(height: 7.v),
-          Padding(
-            padding: EdgeInsets.only(
-              left: 14.h,
-              right: 20.h,
-            ),
-            child: _buildRizJauneSection(
-              context,
-              dynamicText1: "Riz jaune",
-              dynamicText2: "279",
-            ),
-          ),
-          SizedBox(height: 14.v),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Container(
-              height: 14.v,
-              width: 42.h,
-              margin: EdgeInsets.only(left: 14.h),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Align(
-                    alignment: Alignment.center,
+  Widget _buildWaterLogSection(BuildContext context) {
+    return FutureBuilder<List<DocumentSnapshot>>(
+        future: _fetchUserWater(),
+        builder: (context, snapshot) {
+          List<DocumentSnapshot> waterDocs = snapshot.data ?? [];
+          int waterAmount = waterDocs[0]['water'] ?? 0;
+          return Container(
+            padding: EdgeInsets.symmetric(vertical: 4.v),
+            decoration: AppDecoration.fillGray800931,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                SizedBox(height: 6.v),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 15.h),
                     child: Text(
-                      "Add food",
-                      style: theme.textTheme.labelMedium,
+                      "Water",
+                      style: theme.textTheme.labelLarge,
                     ),
                   ),
+                ),
+                SizedBox(height: 5.v),
+                Divider(),
+                SizedBox(height: 4.v),
+                Column(children: [
                   Align(
-                    alignment: Alignment.center,
-                    child: Text(
-                      "Add food",
-                      style: theme.textTheme.labelMedium,
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      height: 14.v,
+                      width: 42.h,
+                      margin: EdgeInsets.only(left: 15.v),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Align(
+                            alignment: Alignment.center,
+                            child: Text(
+                              "$waterAmount ml",
+                              style: theme.textTheme.bodySmall!.copyWith(
+                                color: appTheme.whiteA700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ],
-              ),
+                ]),
+                Column(children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      height: 14.v,
+                      width: 42.h,
+                      margin: EdgeInsets.all(15.v),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Align(
+                              alignment: Alignment.center,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.waterScreen,
+                                  );
+                                },
+                                child: Text(
+                                  "Add water",
+                                  style: theme.textTheme.labelMedium,
+                                ),
+                              )),
+                        ],
+                      ),
+                    ),
+                  ),
+                ])
+              ],
             ),
-          ),
-        ],
-      ),
-    );
+          );
+        });
   }
 
   /// Section Widget
-  Widget _buildColumnSection(BuildContext context) {
-    return ListView.separated(
-      physics: NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      separatorBuilder: (
-        context,
-        index,
-      ) {
-        return Padding(
-          padding: EdgeInsets.symmetric(vertical: 6.0.v),
-          child: SizedBox(
-            width: double.maxFinite,
-            child: Divider(
-              height: 1.v,
-              thickness: 1.v,
-              color: appTheme.gray600,
-            ),
-          ),
-        );
-      },
-      itemCount: 5,
-      itemBuilder: (context, index) {
-        return ColumnsectionItemWidget();
-      },
+  Widget _buildColumnSections(BuildContext context) {
+    // List of subsections
+    List<String> subsections = ['Breakfast', 'Lunch', 'Diner', 'Snack'];
+
+    return Column(
+      children: subsections.map((subsection) {
+        return ColumnsectionItemWidget(subsection: subsection);
+      }).toList(),
     );
   }
 
   /// Common widget
-  Widget _buildRizJauneSection(
-    BuildContext context, {
-    required String dynamicText1,
-    required String dynamicText2,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          dynamicText1,
-          style: theme.textTheme.bodySmall!.copyWith(
-            color: appTheme.whiteA700,
-          ),
-        ),
-        Text(
-          dynamicText2,
-          style: theme.textTheme.bodySmall!.copyWith(
-            color: appTheme.whiteA700,
-          ),
-        ),
-      ],
-    );
-  }
 }

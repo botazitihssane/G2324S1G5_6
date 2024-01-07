@@ -13,24 +13,25 @@ class FoodLogContainerPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: Container(
-          width: double.maxFinite,
-          decoration: AppDecoration.fillBlueGray,
+        body: SingleChildScrollView(
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 30.v),
-            child: Column(
-              children: [
-                Text(
-                  "Food log",
-                  style: theme.textTheme.headlineLarge,
-                ),
-                SizedBox(height: 37.v),
-                _buildCaloriesRemaining(context),
-                Divider(),
-                SizedBox(height: 29.v),
-                _buildBreakfast1(context),
-                _buildLunchText(context),
-              ],
+            width: double.maxFinite,
+            decoration: AppDecoration.fillBlueGray,
+            child: Container(
+              padding: EdgeInsets.symmetric(vertical: 30.v),
+              child: Column(
+                children: [
+                  Text(
+                    "Food log",
+                    style: theme.textTheme.headlineLarge,
+                  ),
+                  SizedBox(height: 37.v),
+                  _buildCaloriesRemaining(context),
+                  Divider(),
+                  SizedBox(height: 29.v),
+                  _buildLunchText(context),
+                ],
+              ),
             ),
           ),
         ),
@@ -168,73 +169,6 @@ class FoodLogContainerPage extends StatelessWidget {
   }
 
   /// Section Widget
-  Widget _buildBreakfast1(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 5.v),
-      decoration: AppDecoration.fillGray800931,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(height: 3.v),
-          Padding(
-            padding: EdgeInsets.only(
-              left: 14.h,
-              right: 20.h,
-            ),
-            child: _buildRizJaune(
-              context,
-              userImage: "Breakfast",
-              textLabel: "279",
-            ),
-          ),
-          SizedBox(height: 5.v),
-          Divider(),
-          SizedBox(height: 7.v),
-          Padding(
-            padding: EdgeInsets.only(
-              left: 14.h,
-              right: 20.h,
-            ),
-            child: _buildRizJaune(
-              context,
-              userImage: "Riz jaune",
-              textLabel: "279",
-            ),
-          ),
-          SizedBox(height: 14.v),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Container(
-              height: 14.v,
-              width: 42.h,
-              margin: EdgeInsets.only(left: 14.h),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Align(
-                    alignment: Alignment.center,
-                    child: Text(
-                      "Add food",
-                      style: theme.textTheme.labelMedium,
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.center,
-                    child: Text(
-                      "Add food",
-                      style: theme.textTheme.labelMedium,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Section Widget
   Widget _buildLunchText(BuildContext context) {
     return ListView.separated(
       physics: NeverScrollableScrollPhysics(),
@@ -249,7 +183,7 @@ class FoodLogContainerPage extends StatelessWidget {
             width: double.maxFinite,
             child: Divider(
               height: 1.v,
-              thickness: 1.v,
+              thickness: 2.v,
               color: appTheme.gray600,
             ),
           ),
@@ -259,31 +193,6 @@ class FoodLogContainerPage extends StatelessWidget {
       itemBuilder: (context, index) {
         return LunchtextItemWidget();
       },
-    );
-  }
-
-  /// Common widget
-  Widget _buildRizJaune(
-    BuildContext context, {
-    required String userImage,
-    required String textLabel,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          userImage,
-          style: theme.textTheme.bodySmall!.copyWith(
-            color: appTheme.whiteA700,
-          ),
-        ),
-        Text(
-          textLabel,
-          style: theme.textTheme.bodySmall!.copyWith(
-            color: appTheme.whiteA700,
-          ),
-        ),
-      ],
     );
   }
 }

@@ -16,6 +16,7 @@ dependencies:
   cloud_firestore: ^4.14.0
   scrollable_positioned_list: ^0.3.8
   shared_preferences: ^2.0.8
+  fl_chart: ^0.66.0
 
 dev_dependencies:
   flutter_test:

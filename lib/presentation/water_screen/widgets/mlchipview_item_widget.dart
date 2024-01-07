@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:wotkout_app/core/app_export.dart';
 
-// ignore: must_be_immutable
-class MlchipviewItemWidget extends StatelessWidget {
-  const MlchipviewItemWidget({Key? key})
-      : super(
-          key: key,
-        );
+class _MlchipviewItemWidget extends StatelessWidget {
+  final String label;
+
+  const _MlchipviewItemWidget({Key? key, required this.label})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +17,7 @@ class MlchipviewItemWidget extends StatelessWidget {
       showCheckmark: false,
       labelPadding: EdgeInsets.zero,
       label: Text(
-        "+ 1500 ml",
+        label,
         style: TextStyle(
           color: appTheme.whiteA700,
           fontSize: 15.fSize,

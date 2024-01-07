@@ -40,10 +40,10 @@ class _AddStepsScreenState extends State<AddStepsScreen> {
             'date': formattedDate,
             'nombre': int.tryParse(stepsController.text) ?? 0,
           });
-          /*Navigator.pushReplacement(
+          Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => StepsScreen()),
-          );*/
+          );
         } else {
           print('User document not found');
         }

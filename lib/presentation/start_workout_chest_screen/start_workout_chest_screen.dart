@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:wotkout_app/core/app_export.dart';
+import 'package:wotkout_app/presentation/start_workout_chest_screen/exercices.dart';
 import 'package:wotkout_app/widgets/app_bar/appbar_leading_iconbutton.dart';
 import 'package:wotkout_app/widgets/app_bar/custom_app_bar.dart';
 import 'package:wotkout_app/widgets/custom_elevated_button.dart';
@@ -11,38 +13,60 @@ class StartWorkoutChestScreen extends StatelessWidget {
           key: key,
         );
 
-  TextEditingController timeController = TextEditingController();
+  Future<DocumentSnapshot<Map<String, dynamic>>> fetchWorkoutData() async {
+    String collectionName = 'exercices';
+    String documentId = 'Q4hBKs5tsJegpI4k4lnj';
 
-  TextEditingController calCounterController = TextEditingController();
+    return await FirebaseFirestore.instance
+        .collection(collectionName)
+        .doc(documentId)
+        .get();
+  }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        body: SizedBox(
-          width: double.maxFinite,
-          child: Column(
-            children: [
-              _buildStackOne(context),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildStackTwo(context),
-                      SizedBox(height: 427.v),
-                      Text(
-                        "Hello Mohamed",
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.displayMedium,
-                      ),
-                    ],
+        body: FutureBuilder(
+          future: fetchWorkoutData(),
+          builder: (context,
+              AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator();
+            }
+
+            if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}');
+            }
+
+            if (!snapshot.hasData || snapshot.data == null) {
+              return Text('No data available');
+            }
+
+            final exercice workoutData = exercice(
+                title: snapshot.data!['titre'],
+                description: snapshot.data!['description'],
+                duration: snapshot.data!['duree'],
+                calories: snapshot.data!['calories'],
+                soustitre: snapshot.data!['soustitre']);
+
+            return Column(
+              children: [
+                _buildStackOne(context),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildStackTwo(context, workoutData),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -79,7 +103,7 @@ class StartWorkoutChestScreen extends StatelessWidget {
   }
 
   /// Section Widget
-  Widget _buildStackTwo(BuildContext context) {
+  Widget _buildStackTwo(BuildContext context, exercice workoutData) {
     return SizedBox(
       height: 604.v,
       width: double.maxFinite,
@@ -115,7 +139,8 @@ class StartWorkoutChestScreen extends StatelessWidget {
                                 children: [
                                   CustomTextFormField(
                                     width: 86.h,
-                                    controller: timeController,
+                                    controller: TextEditingController(
+                                        text: "${workoutData.duration} min"),
                                     hintText: "50 min",
                                     prefix: Container(
                                       margin: EdgeInsets.fromLTRB(
@@ -144,7 +169,8 @@ class StartWorkoutChestScreen extends StatelessWidget {
                                     padding: EdgeInsets.only(left: 17.h),
                                     child: CustomTextFormField(
                                       width: 89.h,
-                                      controller: calCounterController,
+                                      controller: TextEditingController(
+                                          text: "${workoutData.calories} Cal"),
                                       hintText: "700 Cal",
                                       textInputAction: TextInputAction.done,
                                       prefix: Container(
@@ -182,26 +208,20 @@ class StartWorkoutChestScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "CHEST WORKOUT",
+                                  workoutData.title,
                                   style: CustomTextStyles.titleLargeOpenSans,
                                 ),
                                 SizedBox(height: 8.v),
                                 Text(
-                                  "04 Workouts for Beginner",
+                                  workoutData.soustitre,
                                   style: theme.textTheme.bodyMedium,
                                 ),
                                 SizedBox(height: 95.v),
                                 SizedBox(
                                   width: 307.h,
                                   child: Text(
-                                    "Want your body to be healthy. Join our program with directions according to body’s goals. Increasing physical strength is the goal of strenght training. Maintain body fitness by doing physical exercise at least 2-3 times a week. ",
-                                    maxLines: 6,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: CustomTextStyles
-                                        .bodyMediumWhiteA70015
-                                        .copyWith(
-                                      height: 1.40,
-                                    ),
+                                    workoutData.description,
+                                    style: theme.textTheme.bodyMedium,
                                   ),
                                 ),
                               ],
