@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:wotkout_app/core/app_export.dart';
 import 'package:wotkout_app/model/user.dart';
@@ -10,20 +11,26 @@ class SavingPageScreen extends StatelessWidget {
 
   Future<void> saveUserToFirestore(CustomUser user) async {
     try {
-      var querySnapshot = await FirebaseFirestore.instance
+      FirebaseAuth auth = FirebaseAuth.instance;
+      User? currentUser = auth.currentUser;
+      String userEmail = currentUser?.email ?? '';
+      user.email = userEmail;
+      await FirebaseFirestore.instance
           .collection('users')
-          .where('email', isEqualTo: user.email)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        var docId = querySnapshot.docs.first.id;
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(docId)
-            .update(user.toMap());
-      } else {
-        await FirebaseFirestore.instance.collection('users').add(user.toMap());
-      }
+          .where('email', isEqualTo: userEmail)
+          .get()
+          .then((QuerySnapshot querySnapshot) async {
+        if (querySnapshot.docs.isNotEmpty) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(querySnapshot.docs.first.id)
+              .update(user.toMap());
+        } else {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .add(user.toMap());
+        }
+      });
     } catch (e) {
       print('Error saving/updating user to Firestore: $e');
       throw e;
