@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:wotkout_app/core/app_export.dart';
 import 'package:wotkout_app/model/exercices.dart';
@@ -9,6 +10,7 @@ import 'package:wotkout_app/widgets/custom_text_form_field.dart';
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'dart:async';
 
 class StartWorkoutChestScreen extends StatefulWidget {
   final String catId;
@@ -26,6 +28,23 @@ class StartWorkoutChestScreen extends StatefulWidget {
 class _StartWorkoutChestScreenState extends State<StartWorkoutChestScreen> {
   late YoutubePlayerController _controller;
   Set<String> expandedItems = {};
+  int elapsedTimeSeconds = 0;
+  late Timer _elapsedTimeTimer;
+  bool isWorkoutInProgress = false;
+  ValueNotifier<int> elapsedTimeNotifier = ValueNotifier<int>(0);
+
+  void startElapsedTime() {
+    _elapsedTimeTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      elapsedTimeNotifier.value++;
+      print('Timer tick: ${elapsedTimeNotifier.value}');
+    });
+    print('Timer started');
+  }
+
+  void stopElapsedTime() {
+    _elapsedTimeTimer.cancel();
+  }
+
   Future<DocumentSnapshot<Map<String, dynamic>>> fetchWorkoutData() async {
     String collectionName = 'categories';
 
@@ -58,6 +77,8 @@ class _StartWorkoutChestScreenState extends State<StartWorkoutChestScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print('Building widget with elapsed time: ${elapsedTimeNotifier.value}');
+
     return SafeArea(
       child: Scaffold(
         resizeToAvoidBottomInset: false,
@@ -128,176 +149,207 @@ class _StartWorkoutChestScreenState extends State<StartWorkoutChestScreen> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          Align(
-            alignment: Alignment.center,
-            child: Container(
-              child: SizedBox(
-                width: double.maxFinite,
-                child: Stack(
-                  alignment: Alignment.bottomCenter,
-                  children: [
-                    Align(
-                      alignment: Alignment.center,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 32.h,
-                          vertical: 48.v,
-                        ),
-                        decoration: AppDecoration.fillOnPrimary.copyWith(
-                          borderRadius: BorderRadiusStyle.customBorderTL32,
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: SizedBox(
-                                height: 200.v,
-                                width: 307.h,
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Padding(
-                                        padding: EdgeInsets.only(top: 70.v),
-                                        child: Row(
-                                          children: [
-                                            Container(
-                                              width: 20.h,
-                                              margin: EdgeInsets.fromLTRB(
-                                                  5.h, 5.v, 6.h, 5.v),
-                                              child: CustomImageView(
-                                                imagePath: ImageConstant
-                                                    .imgOverflowmenu,
-                                                height: 19.adaptSize,
-                                                width: 19.adaptSize,
-                                              ),
-                                            ),
-                                            Text(
-                                              "${workoutData.duration} min",
-                                              style: TextStyle(
-                                                fontSize: 12.0,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                            Padding(
-                                                padding:
-                                                    EdgeInsets.only(left: 17.h),
-                                                child: Row(
-                                                  children: [
-                                                    Container(
-                                                      margin:
-                                                          EdgeInsets.fromLTRB(
-                                                              5.h,
-                                                              5.v,
-                                                              6.h,
-                                                              5.v),
-                                                      child: CustomImageView(
-                                                        imagePath: ImageConstant
-                                                            .imgFireWhiteA700,
-                                                        height: 19.adaptSize,
-                                                        width: 19.adaptSize,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      "${workoutData.calories} Cal",
-                                                      style: TextStyle(
-                                                        fontSize: 12.0,
-                                                        color: Colors.black,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                )),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.center,
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            workoutData.title,
-                                            style: CustomTextStyles
-                                                .titleLargeOpenSans,
-                                          ),
-                                          SizedBox(height: 8.v),
-                                          Text(
-                                            workoutData.soustitre,
-                                            style: theme.textTheme.bodyMedium,
-                                          ),
-                                          SizedBox(height: 70.v),
-                                          SizedBox(
-                                            width: 307.h,
-                                            child: Text(
-                                              workoutData.description,
-                                              style: theme.textTheme.bodyMedium,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 20.v),
-                            FutureBuilder(
-                              future: fetchStepsData(),
-                              builder: (context,
-                                  AsyncSnapshot<List<DocumentSnapshot>>
-                                      snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return CircularProgressIndicator();
-                                }
-
-                                if (snapshot.hasError) {
-                                  return Text('Error: ${snapshot.error}');
-                                }
-
-                                if (!snapshot.hasData ||
-                                    snapshot.data == null ||
-                                    snapshot.data!.isEmpty) {
-                                  return Text('No data available');
-                                }
-
-                                return _buildRowOne(context, snapshot.data!);
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Align(
+          Builder(
+            builder: (context) {
+              return Align(
+                alignment: Alignment.center,
+                child: Container(
+                  child: SizedBox(
+                    width: double.maxFinite,
+                    child: Stack(
                       alignment: Alignment.bottomCenter,
-                      child: Container(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            CustomElevatedButton(
-                              height: 50.v,
-                              width: 350.h,
-                              text: "Start Workout",
-                              margin: EdgeInsets.only(right: 15.h),
-                              buttonStyle: CustomButtonStyles.fillPrimaryTL24,
-                              buttonTextStyle: CustomTextStyles
-                                  .titleMediumOpenSansBlack90001,
+                      children: [
+                        Align(
+                          alignment: Alignment.center,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 32.h,
+                              vertical: 48.v,
                             ),
-                          ],
+                            decoration: AppDecoration.fillOnPrimary.copyWith(
+                              borderRadius: BorderRadiusStyle.customBorderTL32,
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: SizedBox(
+                                    height: 200.v,
+                                    width: 307.h,
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        ValueListenableBuilder<int>(
+                                          valueListenable: elapsedTimeNotifier,
+                                          builder:
+                                              (context, elapsedTime, child) {
+                                            print(
+                                                'Building widget with elapsed time: $elapsedTime');
+                                            return _buildTimerWidget();
+                                          },
+                                        ),
+                                        Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Padding(
+                                            padding: EdgeInsets.only(top: 70.v),
+                                            child: Row(
+                                              children: [
+                                                Container(
+                                                  width: 20.h,
+                                                  margin: EdgeInsets.fromLTRB(
+                                                      5.h, 5.v, 6.h, 5.v),
+                                                  child: CustomImageView(
+                                                    imagePath: ImageConstant
+                                                        .imgOverflowmenu,
+                                                    height: 19.adaptSize,
+                                                    width: 19.adaptSize,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  "${workoutData.duration} min",
+                                                  style: TextStyle(
+                                                    fontSize: 12.0,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding: EdgeInsets.only(
+                                                      left: 17.h),
+                                                  child: Row(
+                                                    children: [
+                                                      Container(
+                                                        margin:
+                                                            EdgeInsets.fromLTRB(
+                                                                5.h,
+                                                                5.v,
+                                                                6.h,
+                                                                5.v),
+                                                        child: CustomImageView(
+                                                          imagePath: ImageConstant
+                                                              .imgFireWhiteA700,
+                                                          height: 19.adaptSize,
+                                                          width: 19.adaptSize,
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        "${workoutData.calories} Cal",
+                                                        style: TextStyle(
+                                                          fontSize: 12.0,
+                                                          color: Colors.black,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        Align(
+                                          alignment: Alignment.center,
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                workoutData.title,
+                                                style: CustomTextStyles
+                                                    .titleLargeOpenSans,
+                                              ),
+                                              SizedBox(height: 8.v),
+                                              Text(
+                                                workoutData.soustitre,
+                                                style:
+                                                    theme.textTheme.bodyMedium,
+                                              ),
+                                              SizedBox(height: 70.v),
+                                              SizedBox(
+                                                width: 307.h,
+                                                child: Text(
+                                                  workoutData.description,
+                                                  style: theme
+                                                      .textTheme.bodyMedium,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 20.v),
+                                FutureBuilder(
+                                  future: fetchStepsData(),
+                                  builder: (context,
+                                      AsyncSnapshot<List<DocumentSnapshot>>
+                                          snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return CircularProgressIndicator();
+                                    }
+
+                                    if (snapshot.hasError) {
+                                      return Text('Error: ${snapshot.error}');
+                                    }
+
+                                    if (!snapshot.hasData ||
+                                        snapshot.data == null ||
+                                        snapshot.data!.isEmpty) {
+                                      return Text('No data available');
+                                    }
+
+                                    return _buildRowOne(
+                                        context, snapshot.data!);
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
+                        Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Container(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                CustomElevatedButton(
+                                  height: 50.v,
+                                  width: 350.h,
+                                  text: isWorkoutInProgress
+                                      ? "Finish Workout"
+                                      : "Start Workout",
+                                  margin: EdgeInsets.only(right: 15.h),
+                                  buttonStyle:
+                                      CustomButtonStyles.fillPrimaryTL24,
+                                  buttonTextStyle: CustomTextStyles
+                                      .titleMediumOpenSansBlack90001,
+                                  onPressed: () {
+                                    setState(() {
+                                      if (isWorkoutInProgress) {
+                                        stopElapsedTime();
+                                      } else {
+                                        startElapsedTime();
+                                      }
+                                      isWorkoutInProgress =
+                                          !isWorkoutInProgress;
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ],
       ),
@@ -485,5 +537,39 @@ class _StartWorkoutChestScreenState extends State<StartWorkoutChestScreen> {
         expandedItems.add(identifier);
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _elapsedTimeTimer.cancel();
+    super.dispose();
+  }
+
+  Widget _buildTimerWidget() {
+    String formattedTime =
+        _formatDuration(Duration(seconds: elapsedTimeNotifier.value));
+    return Positioned(
+      top: 20.v,
+      left: 265.h,
+      child: ValueListenableBuilder<int>(
+        valueListenable: elapsedTimeNotifier,
+        builder: (context, value, child) {
+          return Text(
+            formattedTime,
+            style: TextStyle(
+              fontSize: 20.0,
+              color: Colors.white,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return '$twoDigitMinutes:$twoDigitSeconds';
   }
 }
