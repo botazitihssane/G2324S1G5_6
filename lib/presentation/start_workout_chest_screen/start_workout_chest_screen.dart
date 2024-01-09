@@ -1,18 +1,27 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:wotkout_app/core/app_export.dart';
-import 'package:wotkout_app/presentation/start_workout_chest_screen/exercices.dart';
+import 'package:wotkout_app/model/exercices.dart';
 import 'package:wotkout_app/widgets/app_bar/appbar_leading_iconbutton.dart';
 import 'package:wotkout_app/widgets/app_bar/custom_app_bar.dart';
 import 'package:wotkout_app/widgets/custom_elevated_button.dart';
 import 'package:wotkout_app/widgets/custom_text_form_field.dart';
+import 'package:chewie/chewie.dart';
+import 'package:video_player/video_player.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
-class StartWorkoutChestScreen extends StatelessWidget {
+class StartWorkoutChestScreen extends StatefulWidget {
   StartWorkoutChestScreen({Key? key})
       : super(
           key: key,
         );
+  @override
+  _StartWorkoutChestScreenState createState() =>
+      _StartWorkoutChestScreenState();
+}
 
+class _StartWorkoutChestScreenState extends State<StartWorkoutChestScreen> {
+  Set<String> expandedItems = {};
   Future<DocumentSnapshot<Map<String, dynamic>>> fetchWorkoutData() async {
     String collectionName = 'exercices';
     String documentId = 'Q4hBKs5tsJegpI4k4lnj';
@@ -21,6 +30,24 @@ class StartWorkoutChestScreen extends StatelessWidget {
         .collection(collectionName)
         .doc(documentId)
         .get();
+  }
+
+  Future<List<DocumentSnapshot>> fetchStepsData() async {
+    String collectionName = 'exercices';
+    String documentId = 'Q4hBKs5tsJegpI4k4lnj';
+
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection(collectionName)
+          .doc(documentId)
+          .collection('etapes')
+          .get();
+
+      return querySnapshot.docs;
+    } catch (error) {
+      print("Error fetching user food: $error");
+      return [];
+    }
   }
 
   @override
@@ -49,22 +76,21 @@ class StartWorkoutChestScreen extends StatelessWidget {
                 description: snapshot.data!['description'],
                 duration: snapshot.data!['duree'],
                 calories: snapshot.data!['calories'],
-                soustitre: snapshot.data!['soustitre']);
+                soustitre: snapshot.data!['soustitre'],
+                photo: snapshot.data!['photo']);
 
-            return Column(
-              children: [
-                _buildStackOne(context),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildStackTwo(context, workoutData),
-                      ],
-                    ),
+            return SafeArea(
+              child: Scaffold(
+                resizeToAvoidBottomInset: false,
+                body: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildStackOne(context, workoutData),
+                      _buildStackTwo(context, workoutData),
+                    ],
                   ),
                 ),
-              ],
+              ),
             );
           },
         ),
@@ -73,29 +99,18 @@ class StartWorkoutChestScreen extends StatelessWidget {
   }
 
   /// Section Widget
-  Widget _buildStackOne(BuildContext context) {
+  Widget _buildStackOne(BuildContext context, exercice workoutData) {
     return SizedBox(
       height: 269.v,
       width: double.maxFinite,
       child: Stack(
         alignment: Alignment.topCenter,
         children: [
-          CustomImageView(
-            imagePath: ImageConstant.imgImage71,
+          Image.network(
+            workoutData.photo,
             height: 269.v,
             width: 393.h,
-            alignment: Alignment.center,
-          ),
-          CustomAppBar(
-            height: 47.v,
-            leadingWidth: double.maxFinite,
-            leading: AppbarLeadingIconbutton(
-              imagePath: ImageConstant.imgPath,
-              margin: EdgeInsets.only(
-                left: 15.h,
-                right: 346.h,
-              ),
-            ),
+            fit: BoxFit.cover,
           ),
         ],
       ),
@@ -104,172 +119,177 @@ class StartWorkoutChestScreen extends StatelessWidget {
 
   /// Section Widget
   Widget _buildStackTwo(BuildContext context, exercice workoutData) {
-    return SizedBox(
-      height: 604.v,
-      width: double.maxFinite,
-      child: Stack(
-        alignment: Alignment.bottomCenter,
+    return SingleChildScrollView(
+      child: Column(
         children: [
           Align(
             alignment: Alignment.center,
             child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: 32.h,
-                vertical: 48.v,
-              ),
-              decoration: AppDecoration.fillOnPrimary.copyWith(
-                borderRadius: BorderRadiusStyle.customBorderTL32,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: SizedBox(
-                      height: 277.v,
-                      width: 307.h,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Align(
-                            alignment: Alignment.topLeft,
-                            child: Padding(
-                              padding: EdgeInsets.only(top: 87.v),
-                              child: Row(
-                                children: [
-                                  CustomTextFormField(
-                                    width: 86.h,
-                                    controller: TextEditingController(
-                                        text: "${workoutData.duration} min"),
-                                    hintText: "50 min",
-                                    prefix: Container(
-                                      margin: EdgeInsets.fromLTRB(
-                                          5.h, 5.v, 6.h, 5.v),
-                                      child: CustomImageView(
-                                        imagePath:
-                                            ImageConstant.imgOverflowmenu,
-                                        height: 19.adaptSize,
-                                        width: 19.adaptSize,
-                                      ),
-                                    ),
-                                    prefixConstraints: BoxConstraints(
-                                      maxHeight: 29.v,
-                                    ),
-                                    contentPadding: EdgeInsets.only(
-                                      top: 5.v,
-                                      right: 14.h,
-                                      bottom: 5.v,
-                                    ),
-                                    borderDecoration: TextFormFieldStyleHelper
-                                        .fillPrimaryContainer,
-                                    fillColor:
-                                        theme.colorScheme.primaryContainer,
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 17.h),
-                                    child: CustomTextFormField(
-                                      width: 89.h,
-                                      controller: TextEditingController(
-                                          text: "${workoutData.calories} Cal"),
-                                      hintText: "700 Cal",
-                                      textInputAction: TextInputAction.done,
-                                      prefix: Container(
-                                        margin: EdgeInsets.fromLTRB(
-                                            5.h, 5.v, 6.h, 5.v),
-                                        child: CustomImageView(
-                                          imagePath:
-                                              ImageConstant.imgFireWhiteA700,
-                                          height: 19.adaptSize,
-                                          width: 19.adaptSize,
+              child: SizedBox(
+                width: double.maxFinite,
+                child: Stack(
+                  alignment: Alignment.bottomCenter,
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 32.h,
+                          vertical: 48.v,
+                        ),
+                        decoration: AppDecoration.fillOnPrimary.copyWith(
+                          borderRadius: BorderRadiusStyle.customBorderTL32,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: SizedBox(
+                                height: 200.v,
+                                width: 307.h,
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Align(
+                                      alignment: Alignment.topLeft,
+                                      child: Padding(
+                                        padding: EdgeInsets.only(top: 70.v),
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              width: 20.h,
+                                              margin: EdgeInsets.fromLTRB(
+                                                  5.h, 5.v, 6.h, 5.v),
+                                              child: CustomImageView(
+                                                imagePath: ImageConstant
+                                                    .imgOverflowmenu,
+                                                height: 19.adaptSize,
+                                                width: 19.adaptSize,
+                                              ),
+                                            ),
+                                            Text(
+                                              "${workoutData.duration} min",
+                                              style: TextStyle(
+                                                fontSize: 12.0,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            Padding(
+                                                padding:
+                                                    EdgeInsets.only(left: 17.h),
+                                                child: Row(
+                                                  children: [
+                                                    Container(
+                                                      margin:
+                                                          EdgeInsets.fromLTRB(
+                                                              5.h,
+                                                              5.v,
+                                                              6.h,
+                                                              5.v),
+                                                      child: CustomImageView(
+                                                        imagePath: ImageConstant
+                                                            .imgFireWhiteA700,
+                                                        height: 19.adaptSize,
+                                                        width: 19.adaptSize,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "${workoutData.calories} Cal",
+                                                      style: TextStyle(
+                                                        fontSize: 12.0,
+                                                        color: Colors.black,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                )),
+                                          ],
                                         ),
                                       ),
-                                      prefixConstraints: BoxConstraints(
-                                        maxHeight: 29.v,
-                                      ),
-                                      contentPadding: EdgeInsets.only(
-                                        top: 5.v,
-                                        right: 14.h,
-                                        bottom: 5.v,
-                                      ),
-                                      borderDecoration: TextFormFieldStyleHelper
-                                          .fillPrimaryContainer,
-                                      fillColor:
-                                          theme.colorScheme.primaryContainer,
                                     ),
-                                  ),
-                                ],
+                                    Align(
+                                      alignment: Alignment.center,
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            workoutData.title,
+                                            style: CustomTextStyles
+                                                .titleLargeOpenSans,
+                                          ),
+                                          SizedBox(height: 8.v),
+                                          Text(
+                                            workoutData.soustitre,
+                                            style: theme.textTheme.bodyMedium,
+                                          ),
+                                          SizedBox(height: 70.v),
+                                          SizedBox(
+                                            width: 307.h,
+                                            child: Text(
+                                              workoutData.description,
+                                              style: theme.textTheme.bodyMedium,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                          Align(
-                            alignment: Alignment.center,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  workoutData.title,
-                                  style: CustomTextStyles.titleLargeOpenSans,
-                                ),
-                                SizedBox(height: 8.v),
-                                Text(
-                                  workoutData.soustitre,
-                                  style: theme.textTheme.bodyMedium,
-                                ),
-                                SizedBox(height: 95.v),
-                                SizedBox(
-                                  width: 307.h,
-                                  child: Text(
-                                    workoutData.description,
-                                    style: theme.textTheme.bodyMedium,
-                                  ),
-                                ),
-                              ],
+                            SizedBox(height: 20.v),
+                            FutureBuilder(
+                              future: fetchStepsData(),
+                              builder: (context,
+                                  AsyncSnapshot<List<DocumentSnapshot>>
+                                      snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return CircularProgressIndicator();
+                                }
+
+                                if (snapshot.hasError) {
+                                  return Text('Error: ${snapshot.error}');
+                                }
+
+                                if (!snapshot.hasData ||
+                                    snapshot.data == null ||
+                                    snapshot.data!.isEmpty) {
+                                  return Text('No data available');
+                                }
+
+                                return _buildRowOne(context, snapshot.data!);
+                              },
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 11.v),
-                  Padding(
-                    padding: EdgeInsets.only(right: 1.h),
-                    child: _buildRowOne(context),
-                  ),
-                  SizedBox(height: 16.v),
-                  Padding(
-                    padding: EdgeInsets.only(right: 1.h),
-                    child: _buildRowOne(context),
-                  ),
-                  SizedBox(height: 42.v),
-                ],
-              ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: 46.h,
-                vertical: 23.v,
-              ),
-              decoration:
-                  AppDecoration.gradientOnErrorContainerToOnErrorContainer1,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  SizedBox(height: 98.v),
-                  CustomElevatedButton(
-                    height: 52.v,
-                    text: "Start Workout",
-                    margin: EdgeInsets.only(right: 15.h),
-                    buttonStyle: CustomButtonStyles.fillPrimaryTL24,
-                    buttonTextStyle:
-                        CustomTextStyles.titleMediumOpenSansBlack90001,
-                  ),
-                ],
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            CustomElevatedButton(
+                              height: 50.v,
+                              width: 350.h,
+                              text: "Start Workout",
+                              margin: EdgeInsets.only(right: 15.h),
+                              buttonStyle: CustomButtonStyles.fillPrimaryTL24,
+                              buttonTextStyle: CustomTextStyles
+                                  .titleMediumOpenSansBlack90001,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -278,63 +298,202 @@ class StartWorkoutChestScreen extends StatelessWidget {
     );
   }
 
-  /// Common widget
-  Widget _buildRowOne(BuildContext context) {
-    return Container(
-      decoration: AppDecoration.fillPrimaryContainer.copyWith(
-        borderRadius: BorderRadiusStyle.roundedBorder10,
-      ),
-      child: Row(
-        children: [
-          CustomImageView(
-            imagePath: ImageConstant.imgImage4,
-            height: 76.v,
-            width: 82.h,
-            radius: BorderRadius.horizontal(
-              left: Radius.circular(12.h),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(
-              left: 16.h,
-              top: 9.v,
-              bottom: 9.v,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 122.h,
-                  child: Text(
-                    "Stability Training Basics",
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: CustomTextStyles.titleSmallOpenSans.copyWith(
-                      height: 1.20,
-                    ),
+  Widget _buildRowOne(BuildContext context, List<DocumentSnapshot> etapesData) {
+    return Column(
+      children: etapesData.map((etapeSnapshot) {
+        String titre = etapeSnapshot['titre'];
+        String photo = etapeSnapshot['photo'];
+        String videoUrl = etapeSnapshot['video'];
+        print('Title: $titre, Photo: $photo, Video URL: $videoUrl');
+
+        Map<String, dynamic>? data =
+            etapeSnapshot.data() as Map<String, dynamic>?;
+
+        // Initialize Chewie controller
+        YoutubePlayerController youtubeController =
+            _getYouTubeController(videoUrl);
+
+        return Column(
+          children: [
+            Container(
+              margin: EdgeInsets.only(bottom: 10.v),
+              decoration: AppDecoration.fillPrimaryContainer.copyWith(
+                borderRadius: BorderRadiusStyle.roundedBorder10,
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Image.network(
+                        photo,
+                        height: 76.v,
+                        width: 82.h,
+                        fit: BoxFit.cover,
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          // Check if the video URL is present
+                          if (videoUrl != null && videoUrl.isNotEmpty) {
+                            _showVideoPlayer(videoUrl, context);
+                          } else {
+                            _toggleSectionVisibility(videoUrl);
+                          }
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            left: 16.h,
+                            top: 9.v,
+                            bottom: 9.v,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                width: 122.h,
+                                child: Text(
+                                  titre,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: CustomTextStyles.titleSmallOpenSans
+                                      .copyWith(
+                                    height: 1.20,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 2.v),
+                              if (data != null &&
+                                  data.containsKey('sets') &&
+                                  data.containsKey('reps')) ...{
+                                Text(
+                                  '${data['sets']} sets | ${data['reps']} reps',
+                                  style: theme.textTheme.bodyMedium,
+                                ),
+                              } else if (data != null &&
+                                  data.containsKey('duree')) ...{
+                                Text(
+                                  '${data['duree']} min',
+                                  style: theme.textTheme.bodyMedium,
+                                ),
+                              },
+                            ],
+                          ),
+                        ),
+                      ),
+                      Spacer(),
+                      CustomImageView(
+                        imagePath: ImageConstant.imgArrowDown,
+                        height: 24.adaptSize,
+                        width: 24.adaptSize,
+                        margin: EdgeInsets.only(
+                          top: 26.v,
+                          right: 16.h,
+                          bottom: 26.v,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                SizedBox(height: 2.v),
-                Text(
-                  "0:30",
-                  style: theme.textTheme.bodyMedium,
-                ),
-              ],
+                  AnimatedContainer(
+                    duration: Duration(milliseconds: 300),
+                    height: expandedItems.contains(videoUrl) ? 100.v : 0,
+                    child: expandedItems.contains(videoUrl)
+                        ? GestureDetector(
+                            onTap: () {
+                              if (videoUrl != null && videoUrl.isNotEmpty) {
+                                _showVideoPlayer(videoUrl, context);
+                              }
+                            },
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                left: 16.h,
+                                top: 9.v,
+                                bottom: 9.v,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (youtubeController != null) ...{
+                                    _buildYoutubePlayer(youtubeController),
+                                  } else ...{
+                                    Text(
+                                      'Error loading video',
+                                      style: theme.textTheme.bodyMedium,
+                                    ),
+                                  },
+                                ],
+                              ),
+                            ),
+                          )
+                        : SizedBox.shrink(),
+                  )
+                ],
+              ),
             ),
-          ),
-          Spacer(),
-          CustomImageView(
-            imagePath: ImageConstant.imgArrowDown,
-            height: 24.adaptSize,
-            width: 24.adaptSize,
-            margin: EdgeInsets.only(
-              top: 26.v,
-              right: 16.h,
-              bottom: 26.v,
-            ),
-          ),
-        ],
+            // Add some spacing after the expanded section
+            SizedBox(height: expandedItems.contains(videoUrl) ? 16.v : 0),
+          ],
+        );
+      }).toList(),
+    );
+  }
+
+  void _showVideoPlayer(String videoUrl, BuildContext context) {
+    try {
+      YoutubePlayerController youtubeController =
+          _getYouTubeController(videoUrl);
+
+      showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) {
+          return YoutubePlayerBuilder(
+            player: _buildYoutubePlayer(youtubeController),
+            builder: (context, player) {
+              return Scaffold(
+                body: player,
+              );
+            },
+          );
+        },
+      );
+    } catch (error) {
+      print("Error showing YouTube player: $error");
+      // Handle the error (e.g., show an error message)
+    }
+  }
+
+  YoutubePlayer _buildYoutubePlayer(YoutubePlayerController controller) {
+    return YoutubePlayer(
+      controller: controller,
+      showVideoProgressIndicator: true,
+      progressIndicatorColor: Colors.amber,
+      progressColors: ProgressBarColors(
+        playedColor: Colors.amber,
+        handleColor: Colors.amberAccent,
       ),
     );
+  }
+
+  YoutubePlayerController _getYouTubeController(String videoUrl) {
+    try {
+      return YoutubePlayerController(
+        initialVideoId: YoutubePlayer.convertUrlToId(videoUrl)!,
+        flags: YoutubePlayerFlags(
+          autoPlay: true,
+          mute: false,
+        ),
+      );
+    } catch (error) {
+      print("Error creating YouTube controller: $error");
+      throw error;
+    }
+  }
+
+  void _toggleSectionVisibility(String identifier) {
+    setState(() {
+      if (expandedItems.contains(identifier)) {
+        expandedItems.remove(identifier);
+      } else {
+        expandedItems.add(identifier);
+      }
+    });
   }
 }
