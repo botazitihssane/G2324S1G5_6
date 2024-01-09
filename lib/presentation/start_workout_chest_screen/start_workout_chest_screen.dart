@@ -11,35 +11,41 @@ import 'package:video_player/video_player.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class StartWorkoutChestScreen extends StatefulWidget {
-  StartWorkoutChestScreen({Key? key})
-      : super(
-          key: key,
-        );
+  final String catId;
+  final String docId;
+  StartWorkoutChestScreen({
+    Key? key,
+    required this.catId,
+    required this.docId,
+  }) : super(key: key);
   @override
   _StartWorkoutChestScreenState createState() =>
       _StartWorkoutChestScreenState();
 }
 
 class _StartWorkoutChestScreenState extends State<StartWorkoutChestScreen> {
+  late YoutubePlayerController _controller;
   Set<String> expandedItems = {};
   Future<DocumentSnapshot<Map<String, dynamic>>> fetchWorkoutData() async {
-    String collectionName = 'exercices';
-    String documentId = 'Q4hBKs5tsJegpI4k4lnj';
+    String collectionName = 'categories';
 
     return await FirebaseFirestore.instance
         .collection(collectionName)
-        .doc(documentId)
+        .doc(widget.catId)
+        .collection('workouts')
+        .doc(widget.docId)
         .get();
   }
 
   Future<List<DocumentSnapshot>> fetchStepsData() async {
-    String collectionName = 'exercices';
-    String documentId = 'Q4hBKs5tsJegpI4k4lnj';
+    String collectionName = 'categories';
 
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection(collectionName)
-          .doc(documentId)
+          .doc(widget.catId)
+          .collection('workouts')
+          .doc(widget.docId)
           .collection('etapes')
           .get();
 
@@ -309,10 +315,6 @@ class _StartWorkoutChestScreenState extends State<StartWorkoutChestScreen> {
         Map<String, dynamic>? data =
             etapeSnapshot.data() as Map<String, dynamic>?;
 
-        // Initialize Chewie controller
-        YoutubePlayerController youtubeController =
-            _getYouTubeController(videoUrl);
-
         return Column(
           children: [
             Container(
@@ -411,8 +413,8 @@ class _StartWorkoutChestScreenState extends State<StartWorkoutChestScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  if (youtubeController != null) ...{
-                                    _buildYoutubePlayer(youtubeController),
+                                  if (_controller != null) ...{
+                                    _buildYoutubePlayer(_controller),
                                   } else ...{
                                     Text(
                                       'Error loading video',
@@ -438,14 +440,17 @@ class _StartWorkoutChestScreenState extends State<StartWorkoutChestScreen> {
 
   void _showVideoPlayer(String videoUrl, BuildContext context) {
     try {
-      YoutubePlayerController youtubeController =
-          _getYouTubeController(videoUrl);
+      final videoId = YoutubePlayer.convertUrlToId(videoUrl);
+      print('video id $videoId');
+      _controller = YoutubePlayerController(
+          initialVideoId: videoId!,
+          flags: const YoutubePlayerFlags(autoPlay: true));
 
       showModalBottomSheet(
         context: context,
         builder: (BuildContext context) {
           return YoutubePlayerBuilder(
-            player: _buildYoutubePlayer(youtubeController),
+            player: _buildYoutubePlayer(_controller),
             builder: (context, player) {
               return Scaffold(
                 body: player,
@@ -470,21 +475,6 @@ class _StartWorkoutChestScreenState extends State<StartWorkoutChestScreen> {
         handleColor: Colors.amberAccent,
       ),
     );
-  }
-
-  YoutubePlayerController _getYouTubeController(String videoUrl) {
-    try {
-      return YoutubePlayerController(
-        initialVideoId: YoutubePlayer.convertUrlToId(videoUrl)!,
-        flags: YoutubePlayerFlags(
-          autoPlay: true,
-          mute: false,
-        ),
-      );
-    } catch (error) {
-      print("Error creating YouTube controller: $error");
-      throw error;
-    }
   }
 
   void _toggleSectionVisibility(String identifier) {

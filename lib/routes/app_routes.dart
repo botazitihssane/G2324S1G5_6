@@ -164,6 +164,16 @@ class AppRoutes {
     return SearchFoodScreen();
   }
 
+  static Widget startWorkoutChest(BuildContext context) {
+    final Map<String, dynamic> arguments =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+
+    return StartWorkoutChestScreen(
+      catId: arguments['catId'],
+      docId: arguments['docId'],
+    );
+  }
+
   static Map<String, WidgetBuilder> routes = {
     agePageScreen: (context) => ageScreen(context),
     genderPageScreen: (context) => genderScreen(context),
@@ -196,7 +206,7 @@ class AppRoutes {
     doAWorkoutScreen: (context) => DoAWorkoutScreen(),
     saveSessionScreen: (context) => SaveSessionScreen(),
     startWorkoutWarmUpScreen: (context) => StartWorkoutWarmUpScreen(),
-    startWorkoutChestScreen: (context) => StartWorkoutChestScreen(),
+    startWorkoutChestScreen: (context) => startWorkoutChest(context),
     startWorkoutBackScreen: (context) => StartWorkoutBackScreen(),
     startWorkoutShoulderScreen: (context) => StartWorkoutShoulderScreen(),
     appNavigationScreen: (context) => AppNavigationScreen()
