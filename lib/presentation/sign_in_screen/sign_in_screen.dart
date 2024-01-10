@@ -52,12 +52,9 @@ class _SignInScreenState extends State<SignInScreen> {
             arguments: user,
           );
         } else {
-          // Check if all attributes are present before navigating
           if (!user.areAttributesEmpty()) {
-            Navigator.pushReplacementNamed(
-                context, AppRoutes.modifyProfilScreen);
+            Navigator.pushReplacementNamed(context, AppRoutes.dashboardScreen);
           } else {
-            // Handle the case where some attributes are missing
             print("Some attributes are missing");
           }
         }

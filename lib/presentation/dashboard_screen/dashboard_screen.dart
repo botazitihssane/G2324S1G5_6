@@ -19,17 +19,6 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(
-          actions: [
-            IconButton(
-              icon: Icon(Icons.logout),
-              onPressed: () async {
-                await _auth.signOut();
-                Navigator.pushReplacementNamed(context, AppRoutes.signInScreen);
-              },
-            ),
-          ],
-        ),
         body: SizedBox(
           width: double.maxFinite,
           child: Column(
@@ -94,16 +83,8 @@ class DashboardScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    CustomImageView(
-                      imagePath: ImageConstant.imgIndianMan8043472128063x65,
-                      height: 63.v,
-                      width: 65.h,
-                      radius: BorderRadius.circular(
-                        31.h,
-                      ),
-                    ),
                     Padding(
                       padding: EdgeInsets.only(
                         top: 14.v,
@@ -113,6 +94,15 @@ class DashboardScreen extends StatelessWidget {
                         "MyWorkout",
                         style: theme.textTheme.headlineLarge,
                       ),
+                    ),
+                    SizedBox(width: 170.h),
+                    IconButton(
+                      icon: Icon(Icons.logout),
+                      onPressed: () async {
+                        await _auth.signOut();
+                        Navigator.pushReplacementNamed(
+                            context, AppRoutes.signInScreen);
+                      },
                     ),
                   ],
                 ),
