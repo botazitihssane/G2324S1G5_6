@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:wotkout_app/core/app_export.dart';
@@ -15,6 +16,7 @@ import 'dart:async';
 class StartWorkoutChestScreen extends StatefulWidget {
   final String catId;
   final String docId;
+
   StartWorkoutChestScreen({
     Key? key,
     required this.catId,
@@ -32,6 +34,15 @@ class _StartWorkoutChestScreenState extends State<StartWorkoutChestScreen> {
   late Timer _elapsedTimeTimer;
   bool isWorkoutInProgress = false;
   ValueNotifier<int> elapsedTimeNotifier = ValueNotifier<int>(0);
+  late exercice workoutData;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  User? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _user = _auth.currentUser;
+  }
 
   void startElapsedTime() {
     _elapsedTimeTimer = Timer.periodic(Duration(seconds: 1), (timer) {
@@ -43,6 +54,21 @@ class _StartWorkoutChestScreenState extends State<StartWorkoutChestScreen> {
 
   void stopElapsedTime() {
     _elapsedTimeTimer.cancel();
+  }
+
+  void _navigateToSummaryPage() {
+    if (workoutData != null) {
+      Navigator.pushNamed(
+        context,
+        AppRoutes.saveSessionScreen,
+        arguments: {
+          'email': _user!.email,
+          'titre': workoutData!.title,
+          'calories': workoutData!.calories,
+          'duree': workoutData!.duration,
+        },
+      );
+    }
   }
 
   Future<DocumentSnapshot<Map<String, dynamic>>> fetchWorkoutData() async {
@@ -98,14 +124,16 @@ class _StartWorkoutChestScreenState extends State<StartWorkoutChestScreen> {
               return Text('No data available');
             }
 
-            final exercice workoutData = exercice(
+            if (snapshot.hasData) {
+              workoutData = exercice(
                 title: snapshot.data!['titre'],
                 description: snapshot.data!['description'],
                 duration: snapshot.data!['duree'],
                 calories: snapshot.data!['calories'],
                 soustitre: snapshot.data!['soustitre'],
-                photo: snapshot.data!['photo']);
-
+                photo: snapshot.data!['photo'],
+              );
+            }
             return SafeArea(
               child: Scaffold(
                 resizeToAvoidBottomInset: false,
@@ -332,6 +360,7 @@ class _StartWorkoutChestScreenState extends State<StartWorkoutChestScreen> {
                                     setState(() {
                                       if (isWorkoutInProgress) {
                                         stopElapsedTime();
+                                        _navigateToSummaryPage();
                                       } else {
                                         startElapsedTime();
                                       }

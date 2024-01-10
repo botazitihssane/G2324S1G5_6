@@ -174,6 +174,18 @@ class AppRoutes {
     );
   }
 
+  static Widget saveSessionPage(BuildContext context) {
+    final Map<String, dynamic> arguments =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+
+    return SaveSessionScreen(
+      email: arguments['email'],
+      titre: arguments['titre'],
+      calories: arguments['calories'],
+      duree: arguments['duree'],
+    );
+  }
+
   static Map<String, WidgetBuilder> routes = {
     agePageScreen: (context) => ageScreen(context),
     genderPageScreen: (context) => genderScreen(context),
@@ -204,7 +216,7 @@ class AppRoutes {
     workoutCategoriesTabContainerScreen: (context) =>
         WorkoutCategoriesTabContainerScreen(),
     doAWorkoutScreen: (context) => DoAWorkoutScreen(),
-    saveSessionScreen: (context) => SaveSessionScreen(),
+    saveSessionScreen: (context) => saveSessionPage(context),
     startWorkoutWarmUpScreen: (context) => StartWorkoutWarmUpScreen(),
     startWorkoutChestScreen: (context) => startWorkoutChest(context),
     startWorkoutBackScreen: (context) => StartWorkoutBackScreen(),

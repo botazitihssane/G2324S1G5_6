@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:wotkout_app/core/app_export.dart';
 import 'package:wotkout_app/widgets/app_bar/appbar_leading_image.dart';
@@ -7,8 +9,112 @@ import 'package:wotkout_app/widgets/app_bar/custom_app_bar.dart';
 import 'package:wotkout_app/widgets/custom_elevated_button.dart';
 import 'package:wotkout_app/widgets/custom_icon_button.dart';
 
-class SaveSessionScreen extends StatelessWidget {
-  const SaveSessionScreen({Key? key}) : super(key: key);
+class SaveSessionScreen extends StatefulWidget {
+  final String email;
+  final String titre;
+  final int calories;
+  final int duree;
+
+  const SaveSessionScreen({
+    Key? key,
+    required this.email,
+    required this.titre,
+    required this.calories,
+    required this.duree,
+  }) : super(key: key);
+
+  @override
+  _SaveSessionScreenState createState() => _SaveSessionScreenState();
+}
+
+class _SaveSessionScreenState extends State<SaveSessionScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  late Future<DocumentSnapshot<Map<String, dynamic>>> _userTop;
+
+  late int bestCalories;
+  late int bestTime;
+  late String topWorkoutDocId;
+
+  @override
+  void initState() {
+    super.initState();
+    _userTop = _fetchUserTopWorkout();
+  }
+
+  Future<DocumentSnapshot<Map<String, dynamic>>> _fetchUserTopWorkout() async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: widget.email)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        String userId = querySnapshot.docs.first.id;
+
+        QuerySnapshot workoutSnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .collection('workout')
+            .limit(1)
+            .get();
+
+        if (workoutSnapshot.docs.isNotEmpty) {
+          setState(() {
+            topWorkoutDocId = workoutSnapshot.docs.first.id;
+            bestCalories = workoutSnapshot.docs.first['bestCalories'] ?? 0;
+            bestTime = workoutSnapshot.docs.first['bestTime'] ?? 0;
+          });
+        } else {
+          setState(() {
+            bestCalories = 0;
+            bestTime = 0;
+          });
+        }
+
+        return Future.value(null);
+      }
+
+      return Future.value(null);
+    } catch (error) {
+      print("Error fetching user top workout: $error");
+      return Future.value(null);
+    }
+  }
+
+  void _storeBestWorkout(biggerCalories, biggerTime) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(topWorkoutDocId)
+          .collection('workout')
+          .doc()
+          .set({
+        'bestCalories': biggerCalories,
+        'bestTime': biggerTime,
+      });
+
+      print('Best workout stored successfully.');
+    } catch (error) {
+      print('Error storing best workout: $error');
+    }
+  }
+
+  void _storeWorkoutHistory() async {
+    try {
+      await FirebaseFirestore.instance.collection('workoutHistory').add({
+        'email': widget.email,
+        'titre': widget.titre,
+        'date': DateTime.now(),
+        'calories': widget.calories,
+        'duree': widget.duree,
+      });
+
+      print('Workout history stored successfully.');
+    } catch (error) {
+      print('Error storing workout history: $error');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,17 +130,17 @@ class SaveSessionScreen extends StatelessWidget {
                           child: Padding(
                               padding: EdgeInsets.only(right: 25.h),
                               child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Padding(
-                                        padding: EdgeInsets.only(right: 103.h),
+                                        padding: EdgeInsets.all(0),
                                         child: Text("Great Job!",
                                             style: theme
                                                 .textTheme.headlineMedium)),
                                     Padding(
-                                        padding: EdgeInsets.only(right: 34.h),
+                                        padding: EdgeInsets.all(0),
                                         child: Text(
-                                            "You’ve completed your 34th workout",
+                                            "You’ve completed your workout",
                                             style: CustomTextStyles
                                                 .bodyLargeNewYork)),
                                     SizedBox(height: 49.v),
@@ -48,14 +154,15 @@ class SaveSessionScreen extends StatelessWidget {
                                         buttonStyle:
                                             CustomButtonStyles.fillPrimaryTL14,
                                         buttonTextStyle: CustomTextStyles
-                                            .titleMediumSFProTextBlack90001),
+                                            .titleMediumSFProTextBlack90001,
+                                        onPressed: () {
+                                          _storeWorkoutHistory();
+                                          Navigator.pushNamed(
+                                              context,
+                                              AppRoutes
+                                                  .workoutCategoriesTabContainerScreen);
+                                        }),
                                     SizedBox(height: 491.v),
-                                    Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: Text("Hello Mohamed",
-                                            textAlign: TextAlign.center,
-                                            style:
-                                                theme.textTheme.displayMedium))
                                   ]))))
                 ]))));
   }
@@ -84,15 +191,19 @@ class SaveSessionScreen extends StatelessWidget {
                       text: "Back", margin: EdgeInsets.only(left: 5.h)),
                   actions: [
                     AppbarSubtitleThree(
-                        text: "Delete Session",
+                        text: "Exit",
                         margin: EdgeInsets.symmetric(
                             horizontal: 16.h, vertical: 1.v))
                   ]),
               SizedBox(height: 11.v),
               Padding(
-                  padding: EdgeInsets.only(left: 39.h),
-                  child:
-                      Text("Save Session", style: theme.textTheme.displaySmall))
+                  padding: EdgeInsets.all(0),
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text("Save Session",
+                            style: theme.textTheme.displaySmall)
+                      ]))
             ]));
   }
 
@@ -103,26 +214,11 @@ class SaveSessionScreen extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
           Padding(
               padding: EdgeInsets.only(left: 21.h),
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("Summary",
-                        style: CustomTextStyles.titleMediumSFProText),
-                    RichText(
-                        text: TextSpan(children: [
-                          TextSpan(
-                              text: "Compare to: ",
-                              style: theme.textTheme.bodyLarge),
-                          TextSpan(
-                              text: "Previous ",
-                              style: CustomTextStyles.bodyLargeIndigo400),
-                          TextSpan(
-                              text: "􀆈 ",
-                              style: CustomTextStyles.bodyLargeIndigo400)
-                        ]),
-                        textAlign: TextAlign.left)
-                  ])),
-          SizedBox(height: 14.v),
+              child:
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Text("Summary", style: CustomTextStyles.titleMediumSFProText),
+              ])),
+          SizedBox(height: 20.v),
           Padding(
               padding: EdgeInsets.only(left: 50.h, right: 29.h),
               child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
@@ -150,7 +246,7 @@ class SaveSessionScreen extends StatelessWidget {
                   RichText(
                       text: TextSpan(children: [
                         TextSpan(
-                            text: "688 ",
+                            text: widget.calories.toString(),
                             style: CustomTextStyles
                                 .titleMediumSFProTextDeeporange500SemiBold),
                         TextSpan(
@@ -186,23 +282,29 @@ class SaveSessionScreen extends StatelessWidget {
                   Text("Lifted", style: theme.textTheme.bodyLarge)
                 ]),
                 Spacer(flex: 52),
-                _buildTime(context, timeText: "45 min", trainedText: "Trained")
+                _buildTime(context,
+                    timeText: widget.duree.toString(), trainedText: "Trained")
               ]))
         ]));
   }
 
   /// Section Widget
   Widget _buildSummary1(BuildContext context) {
+    int biggerCalories =
+        bestCalories > widget.calories ? bestCalories : widget.calories;
+    int biggerTime = bestTime > widget.duree ? bestTime : widget.duree;
+
+    _storeBestWorkout(biggerCalories, biggerTime);
     return Container(
         padding: EdgeInsets.symmetric(horizontal: 25.h),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Text("Personal Records",
               style: CustomTextStyles.titleMediumSFProText),
-          SizedBox(height: 15.v),
+          SizedBox(height: 25.v),
           Align(
-              alignment: Alignment.centerRight,
+              alignment: Alignment.centerLeft,
               child: Padding(
-                  padding: EdgeInsets.only(right: 63.h),
+                  padding: EdgeInsets.only(right: 120.v),
                   child:
                       Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                     Column(children: [
@@ -217,7 +319,7 @@ class SaveSessionScreen extends StatelessWidget {
                       RichText(
                           text: TextSpan(children: [
                             TextSpan(
-                                text: "688 ",
+                                text: "$biggerCalories ",
                                 style: CustomTextStyles
                                     .titleMediumSFProTextDeeporange500SemiBold),
                             TextSpan(
@@ -229,9 +331,10 @@ class SaveSessionScreen extends StatelessWidget {
                       Text("Burned", style: theme.textTheme.bodyLarge)
                     ]),
                     Padding(
-                        padding: EdgeInsets.only(left: 47.h),
+                        padding: EdgeInsets.only(left: 60.h),
                         child: _buildTime(context,
-                            timeText: "45 min", trainedText: "Trained"))
+                            timeText: "$biggerTime min",
+                            trainedText: "Trained"))
                   ])))
         ]));
   }
