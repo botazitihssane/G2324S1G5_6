@@ -40,15 +40,12 @@ class ViewMyWorkoutTabContainerScreenState
               SizedBox(height: 32.v),
               _buildWorkoutRow(context),
               SizedBox(height: 17.v),
-              _buildTabview(context),
               Expanded(
                 child: SizedBox(
                   height: 639.v,
                   child: TabBarView(
                     controller: tabviewController,
                     children: [
-                      ViewMyWorkoutPage(),
-                      ViewMyWorkoutPage(),
                       ViewMyWorkoutPage(),
                     ],
                   ),
@@ -75,7 +72,7 @@ class ViewMyWorkoutTabContainerScreenState
               bottom: 3.v,
             ),
             child: Text(
-              "Workout",
+              "My Workouts",
               style: CustomTextStyles.headlineMediumSFProPrimary,
             ),
           ),
@@ -86,62 +83,6 @@ class ViewMyWorkoutTabContainerScreenState
             decoration: IconButtonStyleHelper.fillWhiteA,
             child: CustomImageView(
               imagePath: ImageConstant.imgSearch,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Section Widget
-  Widget _buildTabview(BuildContext context) {
-    return Container(
-      height: 54.v,
-      width: 392.h,
-      decoration: BoxDecoration(
-        color: appTheme.gray100,
-        borderRadius: BorderRadius.circular(
-          27.h,
-        ),
-      ),
-      child: TabBar(
-        controller: tabviewController,
-        labelPadding: EdgeInsets.zero,
-        labelColor: appTheme.gray90001,
-        labelStyle: TextStyle(
-          fontSize: 16.fSize,
-          fontFamily: 'SF Pro',
-          fontWeight: FontWeight.w700,
-        ),
-        unselectedLabelColor: theme.colorScheme.secondaryContainer,
-        unselectedLabelStyle: TextStyle(
-          fontSize: 16.fSize,
-          fontFamily: 'SF Pro',
-          fontWeight: FontWeight.w700,
-        ),
-        indicatorPadding: EdgeInsets.all(
-          8.0.h,
-        ),
-        indicator: BoxDecoration(
-          color: theme.colorScheme.primary,
-          borderRadius: BorderRadius.circular(
-            19.h,
-          ),
-        ),
-        tabs: [
-          Tab(
-            child: Text(
-              "At home",
-            ),
-          ),
-          Tab(
-            child: Text(
-              "Gym",
-            ),
-          ),
-          Tab(
-            child: Text(
-              "Walk & run",
             ),
           ),
         ],

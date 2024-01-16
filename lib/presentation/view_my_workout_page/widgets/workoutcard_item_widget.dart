@@ -4,10 +4,18 @@ import 'package:wotkout_app/widgets/custom_elevated_button.dart';
 
 // ignore: must_be_immutable
 class WorkoutcardItemWidget extends StatelessWidget {
-  const WorkoutcardItemWidget({Key? key})
-      : super(
-          key: key,
-        );
+  final String title;
+  final String duration;
+  final String calories;
+  final String photo;
+
+  const WorkoutcardItemWidget(
+      {Key? key,
+      required this.title,
+      required this.duration,
+      required this.calories,
+      required this.photo})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,8 +27,8 @@ class WorkoutcardItemWidget extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadiusStyle.roundedBorder10,
         image: DecorationImage(
-          image: AssetImage(
-            ImageConstant.imgFrame29,
+          image: NetworkImage(
+            photo,
           ),
           fit: BoxFit.cover,
         ),
@@ -36,20 +44,13 @@ class WorkoutcardItemWidget extends StatelessWidget {
               SizedBox(
                 width: 119.h,
                 child: Text(
-                  "Belly fat burner for Beginner",
+                  title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: CustomTextStyles.titleMediumSFPro,
                 ),
               ),
               SizedBox(height: 5.v),
-              CustomElevatedButton(
-                height: 19.v,
-                width: 84.h,
-                text: "No Equipment",
-                buttonStyle: CustomButtonStyles.fillIndigoA,
-                buttonTextStyle: CustomTextStyles.bodySmallSFPro,
-              ),
             ],
           ),
           SizedBox(height: 45.v),
@@ -64,7 +65,7 @@ class WorkoutcardItemWidget extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.only(left: 4.h),
                 child: Text(
-                  "20 Min",
+                  duration,
                   style: CustomTextStyles.bodySmallSFPro,
                 ),
               ),
@@ -81,7 +82,7 @@ class WorkoutcardItemWidget extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.only(left: 4.h),
                 child: Text(
-                  "432 Kcal",
+                  calories,
                   style: CustomTextStyles.bodySmallSFPro,
                 ),
               ),

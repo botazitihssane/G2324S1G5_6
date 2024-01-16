@@ -1,3 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:wotkout_app/model/workoutHistory.dart';
+
 import '../view_my_workout_page/widgets/category_item_widget.dart';
 import '../view_my_workout_page/widgets/workoutcard_item_widget.dart';
 import '../view_my_workout_page/widgets/workoutcomponent_item_widget.dart';
@@ -18,6 +22,31 @@ class ViewMyWorkoutPage extends StatefulWidget {
 
 class ViewMyWorkoutPageState extends State<ViewMyWorkoutPage>
     with AutomaticKeepAliveClientMixin<ViewMyWorkoutPage> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  User? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _user = _auth.currentUser;
+  }
+
+  Future<List<Map<String, dynamic>>> getWorkoutHistory() async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('workoutHistory')
+          .where('email', isEqualTo: _user?.email)
+          .get();
+
+      return querySnapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+    } catch (e) {
+      print("Error fetching workout history: $e");
+      return [];
+    }
+  }
+
   @override
   bool get wantKeepAlive => true;
   @override
@@ -33,29 +62,7 @@ class ViewMyWorkoutPageState extends State<ViewMyWorkoutPage>
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildCategory(context),
                     SizedBox(height: 8.v),
-                    Padding(
-                      padding: EdgeInsets.only(left: 7.h),
-                      child: Row(
-                        children: [
-                          _buildLatestButton(context),
-                          Padding(
-                            padding: EdgeInsets.only(
-                              left: 24.h,
-                              top: 8.v,
-                              bottom: 6.v,
-                            ),
-                            child: Text(
-                              "Popular",
-                              style: CustomTextStyles
-                                  .titleMediumSFProSecondaryContainer,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 14.v),
                     _buildWorkoutCard(context),
                     SizedBox(height: 14.v),
                     _buildViewAllButton(context),
@@ -63,18 +70,12 @@ class ViewMyWorkoutPageState extends State<ViewMyWorkoutPage>
                     Padding(
                       padding: EdgeInsets.only(left: 18.h),
                       child: Text(
-                        "Latest Acitivity",
+                        "Latest Activity",
                         style: CustomTextStyles.titleLargeInter,
                       ),
                     ),
                     SizedBox(height: 16.v),
                     _buildWorkoutComponentStack(context),
-                    SizedBox(height: 482.v),
-                    Text(
-                      "Hello Mohamed",
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.displayMedium,
-                    ),
                   ],
                 ),
               ],
@@ -86,40 +87,28 @@ class ViewMyWorkoutPageState extends State<ViewMyWorkoutPage>
   }
 
   /// Section Widget
-  Widget _buildCategory(BuildContext context) {
-    return SizedBox(
-      height: 96.v,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        separatorBuilder: (
-          context,
-          index,
-        ) {
-          return SizedBox(
-            width: 1.h,
-          );
-        },
-        itemCount: 7,
-        itemBuilder: (context, index) {
-          return CategoryItemWidget();
-        },
-      ),
-    );
-  }
-
-  /// Section Widget
-  Widget _buildLatestButton(BuildContext context) {
-    return CustomOutlinedButton(
-      height: 37.v,
-      width: 70.h,
-      text: "Latest",
-      buttonStyle: CustomButtonStyles.outlinePrimary1,
-      buttonTextStyle: CustomTextStyles.titleMediumSFProSemiBold,
-    );
-  }
-
-  /// Section Widget
   Widget _buildWorkoutCard(BuildContext context) {
+    List<Map<String, String>> workoutDataList = [
+      {
+        'title': 'Belly fat burner for Beginner',
+        'duration': '20 Min',
+        'calories': '432 Kcal',
+        'photo': ImageConstant.imgFrame29
+      },
+      {
+        'title': 'Full Body HIIT Workout',
+        'duration': '15 Min',
+        'calories': '300 Kcal',
+        'photo': ImageConstant.imgFrame29
+      },
+      {
+        'title': 'Yoga for Flexibility',
+        'duration': '30 Min',
+        'calories': '150 Kcal',
+        'photo': ImageConstant.imgFrame29
+      },
+    ];
+
     return SizedBox(
       height: 152.v,
       child: ListView.separated(
@@ -133,9 +122,14 @@ class ViewMyWorkoutPageState extends State<ViewMyWorkoutPage>
             width: 12.h,
           );
         },
-        itemCount: 2,
+        itemCount: workoutDataList.length,
         itemBuilder: (context, index) {
-          return WorkoutcardItemWidget();
+          return WorkoutcardItemWidget(
+            title: workoutDataList[index]['title'] ?? '',
+            duration: workoutDataList[index]['duration'] ?? '',
+            calories: workoutDataList[index]['calories'] ?? '',
+            photo: workoutDataList[index]['photo'] ?? '',
+          );
         },
       ),
     );
@@ -151,64 +145,73 @@ class ViewMyWorkoutPageState extends State<ViewMyWorkoutPage>
       ),
       buttonStyle: CustomButtonStyles.outlineSecondaryContainer,
       buttonTextStyle: CustomTextStyles.titleMediumSFProPrimary,
+      onPressed: () {
+        Navigator.pushNamed(
+          context,
+          AppRoutes.workoutCategoriesTabContainerScreen,
+        );
+      },
     );
   }
 
   /// Section Widget
   Widget _buildWorkoutComponentStack(BuildContext context) {
-    return Container(
-      height: 228.v,
-      width: 335.h,
-      margin: EdgeInsets.only(left: 23.h),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Align(
-            alignment: Alignment.bottomLeft,
-            child: Padding(
-              padding: EdgeInsets.only(left: 72.h),
-              child: Row(
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Padding(
+        padding: EdgeInsets.only(left: 5.h),
+        child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance
+              .collection('workoutHistory')
+              .where('email', isEqualTo: _user?.email)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator();
+            }
+
+            if (!snapshot.hasData || snapshot.data == null) {
+              return Text("No data available");
+            }
+
+            var workoutHistory = snapshot.data!.docs;
+            List<Map<String, dynamic>> workoutList = workoutHistory
+                .map((workout) => {
+                      'docId': workout.id,
+                      ...workout.data()!,
+                    })
+                .toList();
+
+            print(workoutHistory.length);
+
+            return Container(
+              margin: EdgeInsets.only(left: 23.h),
+              child: Stack(
+                alignment: Alignment.center,
                 children: [
-                  Text(
-                    "Ulangi",
-                    style: CustomTextStyles.labelLargeInterLightgreenA400,
-                  ),
-                  CustomImageView(
-                    imagePath: ImageConstant.imgArrowRight,
-                    height: 14.adaptSize,
-                    width: 14.adaptSize,
-                    margin: EdgeInsets.only(
-                      left: 3.h,
-                      bottom: 1.v,
+                  Align(
+                    alignment: Alignment.center,
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: 6.v),
+                      child: ListView.builder(
+                        physics: BouncingScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: workoutList.length,
+                        itemBuilder: (context, index) {
+                          print(workoutList.length);
+                          return WorkoutcomponentItemWidget(
+                            workoutData:
+                                WorkoutHistory.fromMap(workoutList[index]),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.center,
-            child: Padding(
-              padding: EdgeInsets.only(bottom: 6.v),
-              child: ListView.separated(
-                physics: NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                separatorBuilder: (
-                  context,
-                  index,
-                ) {
-                  return SizedBox(
-                    height: 20.v,
-                  );
-                },
-                itemCount: 4,
-                itemBuilder: (context, index) {
-                  return WorkoutcomponentItemWidget();
-                },
-              ),
-            ),
-          ),
-        ],
+            );
+          },
+        ),
       ),
     );
   }

@@ -14,6 +14,9 @@ class SaveSessionScreen extends StatefulWidget {
   final String titre;
   final int calories;
   final int duree;
+  final String docId;
+  final String catId;
+  final String photo;
 
   const SaveSessionScreen({
     Key? key,
@@ -21,6 +24,9 @@ class SaveSessionScreen extends StatefulWidget {
     required this.titre,
     required this.calories,
     required this.duree,
+    required this.docId,
+    required this.catId,
+    required this.photo,
   }) : super(key: key);
 
   @override
@@ -108,6 +114,9 @@ class _SaveSessionScreenState extends State<SaveSessionScreen> {
         'date': DateTime.now(),
         'calories': widget.calories,
         'duree': widget.duree,
+        'docId': widget.docId,
+        'catId': widget.catId,
+        'photo': widget.photo
       });
 
       print('Workout history stored successfully.');

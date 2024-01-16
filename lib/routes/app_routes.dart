@@ -179,11 +179,13 @@ class AppRoutes {
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
 
     return SaveSessionScreen(
-      email: arguments['email'],
-      titre: arguments['titre'],
-      calories: arguments['calories'],
-      duree: arguments['duree'],
-    );
+        email: arguments['email'],
+        titre: arguments['titre'],
+        calories: arguments['calories'],
+        duree: arguments['duree'],
+        docId: arguments['docId'],
+        catId: arguments['catId'],
+        photo: arguments['photo']);
   }
 
   static Map<String, WidgetBuilder> routes = {

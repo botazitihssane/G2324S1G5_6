@@ -66,6 +66,9 @@ class _StartWorkoutChestScreenState extends State<StartWorkoutChestScreen> {
           'titre': workoutData!.title,
           'calories': workoutData!.calories,
           'duree': workoutData!.duration,
+          'docId': widget.docId,
+          'catId': widget.catId,
+          'photo': workoutData.photo,
         },
       );
     }
